@@ -26,6 +26,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.pedroapps.recuerdapp.screens.Destinations
+import com.pedroapps.recuerdapp.ui.theme.myAccentColor
+import com.pedroapps.recuerdapp.ui.theme.mySecondaryColor
+import com.pedroapps.recuerdapp.ui.theme.secondSecondary
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,7 +43,10 @@ fun TopNavigationBar(
     val coroutineScope = rememberCoroutineScope()
 
     CenterAlignedTopAppBar(
-        title = { Text(text = "Recuerdapp") },
+        title = { Text(
+            text = "Recuerdapp",
+            color = myAccentColor
+        ) },
         navigationIcon = {
 
             IconButton(
@@ -53,11 +59,15 @@ fun TopNavigationBar(
 
                 }
             ) {
-                Icon(imageVector = Icons.Filled.Menu, contentDescription = "menu button")
+                Icon(
+                    imageVector = Icons.Filled.Menu,
+                    contentDescription = "menu button",
+                    tint = myAccentColor
+                )
             }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color.Cyan
+            containerColor = mySecondaryColor
         )
     )
 }
@@ -79,7 +89,7 @@ fun BottomNavigationBar(
     BottomAppBar(
         tonalElevation = 12.dp,
         //TODO( change the color of the bottom bar)
-        containerColor = Color.Green
+        containerColor = mySecondaryColor
     ) {
 
         NavigationBarItem(
