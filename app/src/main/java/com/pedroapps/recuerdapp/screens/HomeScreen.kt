@@ -12,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 
-
 @Composable
 fun HomeScreen(
     paddingValues: PaddingValues,
@@ -28,7 +27,7 @@ fun HomeScreen(
     ) {
         Text(text = "Main Screen content")
         Button(
-            onClick = { navController.navigate("details") }
+            onClick = { navController.navigate(Destinations.MemoDetailsScreen) }
         ) {
             Text(text = "Go to details")
         }

@@ -38,8 +38,6 @@ fun TopNavigationBar(
     drawerState: DrawerState
 ) {
 
-    //TODO(change colors of top bar)
-
     val coroutineScope = rememberCoroutineScope()
 
     CenterAlignedTopAppBar(
@@ -75,28 +73,22 @@ fun TopNavigationBar(
 
 @Composable
 fun BottomNavigationBar(
-    navController: NavHostController
+    navController: NavHostController,
+    currentDestination: String,
+    updateCurrentDestination: (String) -> Unit
 ) {
     println(navController.currentDestination?.route)
 
-    val currentSelected = remember {
-        mutableStateOf(navController.currentDestination?.route ?: Destinations.HomeScreen)
-    }
-
-    //TODO make it so that the current destination of the navcontroller
-    //is saved in the state, and that is used to determine if navigation items are selected
-
     BottomAppBar(
         tonalElevation = 12.dp,
-        //TODO( change the color of the bottom bar)
         containerColor = mySecondaryColor
     ) {
 
         NavigationBarItem(
-            selected = (currentSelected.value == Destinations.HomeScreen),
+            selected = (currentDestination == Destinations.HomeScreen),
             onClick = {
                 navController.navigate(Destinations.HomeScreen)
-                currentSelected.value = Destinations.HomeScreen
+                updateCurrentDestination(Destinations.HomeScreen)
             },
             icon = { Icon(imageVector = Icons.Filled.Home, contentDescription = "Home screen") },
             label = { Text(text = "Home") }
@@ -104,10 +96,10 @@ fun BottomNavigationBar(
 
 
         NavigationBarItem(
-            selected = (currentSelected.value == Destinations.CreateMemoScreen),
+            selected = (currentDestination == Destinations.CreateMemoScreen),
             onClick = {
                 navController.navigate(Destinations.CreateMemoScreen)
-                currentSelected.value = Destinations.CreateMemoScreen
+                updateCurrentDestination(Destinations.CreateMemoScreen)
             },
             icon = {
                 Icon(
@@ -119,10 +111,10 @@ fun BottomNavigationBar(
         )
 
         NavigationBarItem(
-            selected = (currentSelected.value == Destinations.SettingsScreen),
+            selected = (currentDestination == Destinations.SettingsScreen),
             onClick = {
                 navController.navigate(Destinations.SettingsScreen)
-                currentSelected.value = Destinations.SettingsScreen
+                updateCurrentDestination(Destinations.SettingsScreen)
             },
             icon = { Icon(imageVector = Icons.Filled.Settings, contentDescription = "settings") },
             label = { Text(text = "Settings") }
@@ -135,7 +127,9 @@ fun BottomNavigationBar(
 @Composable
 fun DrawerContent(
     drawerState: DrawerState,
-    navController: NavHostController
+    navController: NavHostController,
+    currentDestination: String,
+    updateCurrentDestination: (String) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -153,10 +147,11 @@ fun DrawerContent(
 
         NavigationDrawerItem(
             label = { Text(text = "Test Screen") },
-            selected = false,
+            selected = currentDestination == Destinations.TestScreen,
             onClick = {
                 coroutineScope.launch {
                     navController.navigate(Destinations.TestScreen)
+                    updateCurrentDestination(Destinations.TestScreen)
                     drawerState.apply {
                         if(isOpen) close() else open()
                     }

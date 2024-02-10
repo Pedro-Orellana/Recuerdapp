@@ -11,6 +11,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -57,10 +58,18 @@ fun Container(
     //dependencies
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val navController = rememberNavController()
+    val appState = viewModel.uiState.collectAsState()
 
     ModalNavigationDrawer(
         drawerContent = {
-            DrawerContent(drawerState = drawerState, navController = navController)
+
+            DrawerContent(
+                drawerState = drawerState,
+                navController = navController,
+                currentDestination = appState.value.currentDestination,
+                updateCurrentDestination = viewModel::updateCurrentDestination
+                )
+
         },
         drawerState = drawerState,
 
@@ -74,7 +83,9 @@ fun Container(
             },
             bottomBar = {
                 BottomNavigationBar(
-                    navController = navController
+                    navController = navController,
+                    currentDestination = appState.value.currentDestination,
+                    updateCurrentDestination = viewModel::updateCurrentDestination
                 )
             },
 
