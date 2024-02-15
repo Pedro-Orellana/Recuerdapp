@@ -94,22 +94,6 @@ fun BottomNavigationBar(
             label = { Text(text = "Home") }
         )
 
-
-        NavigationBarItem(
-            selected = (currentDestination == Destinations.CreateMemoScreen),
-            onClick = {
-                navController.navigate(Destinations.CreateMemoScreen)
-                updateCurrentDestination(Destinations.CreateMemoScreen)
-            },
-            icon = {
-                Icon(
-                    imageVector = Icons.Filled.CheckCircle,
-                    contentDescription = "Create memo"
-                )
-            },
-            label = { Text(text = "Create") }
-        )
-
         NavigationBarItem(
             selected = (currentDestination == Destinations.SettingsScreen),
             onClick = {

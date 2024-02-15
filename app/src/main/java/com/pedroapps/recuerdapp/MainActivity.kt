@@ -4,7 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -68,7 +72,7 @@ fun Container(
                 navController = navController,
                 currentDestination = appState.value.currentDestination,
                 updateCurrentDestination = viewModel::updateCurrentDestination
-                )
+            )
 
         },
         drawerState = drawerState,
@@ -91,6 +95,7 @@ fun Container(
 
             ) { paddingValues ->
             NavHost(navController = navController, startDestination = Destinations.HomeScreen) {
+
                 composable(route = Destinations.HomeScreen) {
                     HomeScreen(
                         paddingValues = paddingValues,
@@ -109,7 +114,7 @@ fun Container(
                 composable(route = Destinations.MemoDetailsScreen) {
                     MemoDetailsScreen(paddingValues = paddingValues)
                 }
-                
+
                 //TODO delete this when no longer needed
                 composable(route = Destinations.TestScreen) {
                     TestScreen(paddingValues = paddingValues)
