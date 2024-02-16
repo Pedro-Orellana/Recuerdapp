@@ -2,6 +2,7 @@ package com.pedroapps.recuerdapp.utils
 
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TimePickerState
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
@@ -69,4 +70,11 @@ fun getEnglishStringDate(currentDate: LocalDate): String {
 
 
     return "$day, $month $numberDay of $year"
+}
+
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+fun TimePickerState.formatTime() : String {
+    return "$hour: $minute"
 }
