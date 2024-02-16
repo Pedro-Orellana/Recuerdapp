@@ -15,8 +15,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -27,12 +29,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.pedroapps.recuerdapp.utils.formatToStringDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateMemoScreen(
     paddingValues: PaddingValues
 ) {
+
     val memo = remember {
         mutableStateOf("")
     }
@@ -41,6 +45,19 @@ fun CreateMemoScreen(
         mutableStateOf(false)
     }
     val datePickerState = rememberDatePickerState()
+
+    val formattedDate = remember {
+        derivedStateOf {
+            //TODO("This is hardcoded right now, change to update on language change)
+            datePickerState.formatToStringDate("en")
+        }
+    }
+
+    fun dismissDatePicker() {
+        openDialog.value = false
+        datePickerState.selectedDateMillis = null
+    }
+
 
     Column(
         horizontalAlignment = Alignment.Start,
@@ -70,10 +87,11 @@ fun CreateMemoScreen(
         )
 
         OutlinedTextField(
-            value = datePickerState.selectedDateMillis.toString(),
+           // value = datePickerState.selectedDateMillis.toString(),
+            value = formattedDate.value,
             onValueChange = { },
             enabled = false,
-            label = { Text(text = "When?")},
+            label = { Text(text = "When?") },
             colors = OutlinedTextFieldDefaults.colors(
                 disabledTextColor = MaterialTheme.colorScheme.onSurface,
                 disabledBorderColor = MaterialTheme.colorScheme.outline,
@@ -91,12 +109,21 @@ fun CreateMemoScreen(
 
         if (openDialog.value) {
             DatePickerDialog(
-                onDismissRequest = { openDialog.value = false },
-                confirmButton = { /*TODO*/ }) {
+                onDismissRequest = { dismissDatePicker() },
+                confirmButton = {
+                    TextButton(onClick = { openDialog.value = false }) {
+                        Text(text = "Select")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { dismissDatePicker() }) {
+                        Text("Cancel")
+                    }
+                }
+            ) {
                 DatePicker(state = datePickerState)
             }
         }
-
 
     }
 }
