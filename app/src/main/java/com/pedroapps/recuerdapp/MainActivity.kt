@@ -1,20 +1,18 @@
 package com.pedroapps.recuerdapp
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -33,13 +31,25 @@ import com.pedroapps.recuerdapp.screens.TestScreen
 import com.pedroapps.recuerdapp.ui.theme.RecuerdappTheme
 import com.pedroapps.recuerdapp.viewmodels.MainViewModel
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContent {
-            val viewModel: MainViewModel = viewModel()
+        val currentLanguage = AppCompatDelegate.getApplicationLocales().toLanguageTags()
 
+        setContent {
+
+            val factory = MainViewModel.Companion.MainViewModelFactory(currentLanguage = currentLanguage)
+            val viewModel: MainViewModel = viewModel(factory = factory)
+
+            //TODO(consider creating the state as a variable here, and then just passing it down as a parameter
+            // in the Container() composable)
+            LaunchedEffect(key1 = true ) {
+                if(viewModel.uiState.value.currentLanguage != currentLanguage) {
+                    viewModel.updateCurrentLanguage(currentLanguage)
+                }
+            }
             RecuerdappTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -51,8 +61,13 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
+
+
+
         }
     }
+
+
 }
 
 @Composable
@@ -104,7 +119,11 @@ fun Container(
                 }
 
                 composable(route = Destinations.SettingsScreen) {
-                    SettingsScreen(paddingValues = paddingValues)
+                    SettingsScreen(
+                        paddingValues = paddingValues,
+                        navController = navController,
+                        currentLanguage = appState.value.currentLanguage
+                    )
                 }
 
                 composable(route = Destinations.CreateMemoScreen) {

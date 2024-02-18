@@ -77,7 +77,6 @@ fun BottomNavigationBar(
     currentDestination: String,
     updateCurrentDestination: (String) -> Unit
 ) {
-    println(navController.currentDestination?.route)
 
     BottomAppBar(
         tonalElevation = 12.dp,
