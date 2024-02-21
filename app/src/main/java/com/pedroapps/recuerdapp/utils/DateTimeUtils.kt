@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
-fun DatePickerState.formatToStringDate(language: String) : String {
+fun DatePickerState.formatToStringDate(languageCode: String, initialValue: String) : String {
 
     var currentDate: Date? = null
     this.selectedDateMillis?.let {
@@ -24,7 +24,7 @@ fun DatePickerState.formatToStringDate(language: String) : String {
         val dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME
         val localDate = LocalDate.parse(stringDate, dateTimeFormatter)
 
-        return when(language) {
+        return when(languageCode) {
             "en" -> getEnglishStringDate(localDate)
             "es" -> "Something in Spanish"
             else -> "Something in another language"
@@ -32,7 +32,7 @@ fun DatePickerState.formatToStringDate(language: String) : String {
     }
 
 
-    return "No selected date yet"
+    return initialValue
 }
 
 

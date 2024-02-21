@@ -1,4 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Recuerdapp</string>
+
+    <!--    NEW MEMO SCREEN-->
+    <string name="new_memo_screen_title">Create a new memo</string>
+    <string name="memo_textfield_label">What do you want to remember?</string>
+    <string name="when_textfield_label">When?</string>
+    <string name="time_textfield_label">At what time?</string>
+    <string name="selected_time_initial_value">No time selected</string>
+    <string name="selected_date_initial_value">No date selected</string>
+
+    <!--    SETTINGS SCREEN-->
+    <string name="settings_screen_title">Settings Screen</string>
+    <string name="select_language_text">Select your preferred language:</string>
+    <string name="spanish_language">Spanish</string>
+    <string name="english_language">English</string>
+    <string name="save_changes_dialog_title">Are you sure you want to save changes?</string>
+    <string name="save_changes_dialog_text">Your app might need to restart for changes to take effect</string>
+
+    <!--    MISC-->
+    <string name="cancel_button">Cancel</string>
+    <string name="save_button">Save</string>
+    <string name="select_button">Select</string>
 </resources>
