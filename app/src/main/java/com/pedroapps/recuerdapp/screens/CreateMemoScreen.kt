@@ -32,11 +32,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.getString
+import com.pedroapps.recuerdapp.R
 import com.pedroapps.recuerdapp.components.MyTimePickerDialog
 import com.pedroapps.recuerdapp.utils.formatTime
 import com.pedroapps.recuerdapp.utils.formatToStringDate
@@ -49,6 +53,9 @@ import java.time.ZoneOffset
 fun CreateMemoScreen(
     paddingValues: PaddingValues
 ) {
+    val context = LocalContext.current
+    val initialTimeValue: String = getString( context, R.string.selected_time_initial_value )
+    val initialDateValue: String = getString( context, R.string.selected_date_initial_value )
 
     val memo = remember {
         mutableStateOf("")
@@ -78,14 +85,13 @@ fun CreateMemoScreen(
     val formattedDate = remember {
         derivedStateOf {
             //TODO("This is hardcoded right now, change to update on language change)
-            datePickerState.formatToStringDate("en")
+            datePickerState.formatToStringDate("en", initialValue = initialDateValue)
         }
     }
 
     val formattedTime = remember {
-        mutableStateOf("No time selected yet")
+        mutableStateOf(initialTimeValue)
     }
-
 
     Column(
         horizontalAlignment = Alignment.Start,
@@ -95,7 +101,7 @@ fun CreateMemoScreen(
             .padding(paddingValues = paddingValues)
     ) {
         Text(
-            text = "Create a new memo",
+            text = stringResource(id = R.string.new_memo_screen_title),
             fontSize = 24.sp,
             fontWeight = FontWeight.Light,
             textAlign = TextAlign.Center,
@@ -106,7 +112,7 @@ fun CreateMemoScreen(
         OutlinedTextField(
             value = memo.value,
             onValueChange = { memo.value = it },
-            label = { Text(text = "What do you want to remember?") },
+            label = { Text(text = stringResource(id = R.string.memo_textfield_label)) },
             minLines = 5,
             modifier = Modifier
                 .fillMaxWidth()
@@ -118,7 +124,7 @@ fun CreateMemoScreen(
             value = formattedDate.value,
             onValueChange = { },
             enabled = false,
-            label = { Text(text = "When?") },
+            label = { Text(text = stringResource(R.string.when_textfield_label)) },
             colors = OutlinedTextFieldDefaults.colors(
                 disabledTextColor = MaterialTheme.colorScheme.onSurface,
                 disabledBorderColor = MaterialTheme.colorScheme.outline,
@@ -203,7 +209,8 @@ fun CreateMemoScreen(
                     TextButton(onClick = {
                         dismissTimePicker(
                             openTimeDialog = openTimeDialog,
-                            formattedTime = formattedTime
+                            formattedTime = formattedTime,
+                            initialValue = initialTimeValue
                         )
                     }) {
                         Text("Dismiss")
@@ -249,10 +256,11 @@ fun selectTime(
 
 fun dismissTimePicker(
     openTimeDialog: MutableState<Boolean>,
-    formattedTime: MutableState<String>
+    formattedTime: MutableState<String>,
+    initialValue: String
 ) {
     openTimeDialog.value = false
-    formattedTime.value = "No time selected yet"
+    formattedTime.value = initialValue
 }
 
 

@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -34,9 +35,10 @@ import androidx.compose.ui.unit.sp
 import androidx.core.os.LocaleListCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.pedroapps.recuerdapp.R
+import com.pedroapps.recuerdapp.utils.ENGLISH_LANGUAGE_CODE
+import com.pedroapps.recuerdapp.utils.SPANISH_LANGUAGE_CODE
 
-//TODO(make it so that when selecting a new language, there is an animation on the main screen
-// and there's no "hiccups" on the transition)
 @Composable
 fun SettingsScreen(
     paddingValues: PaddingValues,
@@ -60,7 +62,7 @@ fun SettingsScreen(
             .padding(paddingValues = paddingValues)
     ) {
         Text(
-            text = "Settings Screen",
+            text = stringResource(id = R.string.settings_screen_title),
             fontSize = 24.sp,
             fontWeight = FontWeight.Light,
             textAlign = TextAlign.Center,
@@ -88,7 +90,7 @@ fun SettingsScreen(
                     .selectableGroup()
             ) {
                 Text(
-                    text = "Select your preferred language",
+                    text = stringResource(id = R.string.select_language_text),
                     modifier = Modifier
                         .padding(start = 12.dp, top = 12.dp)
                 )
@@ -99,16 +101,16 @@ fun SettingsScreen(
                     modifier = Modifier
                         .padding(start = 12.dp, top = 12.dp)
                         .selectable(
-                            selected = selectedLanguage.value == "es",
+                            selected = selectedLanguage.value == SPANISH_LANGUAGE_CODE,
                             enabled = true,
                             role = Role.RadioButton,
-                            onClick = { selectedLanguage.value = "es" }
+                            onClick = { selectedLanguage.value = SPANISH_LANGUAGE_CODE }
                         )
                         .fillMaxWidth(0.3f)
                 ) {
-                    Text(text = "Spanish")
+                    Text(text = stringResource(id = R.string.spanish_language))
                     RadioButton(
-                        selected = selectedLanguage.value == "es",
+                        selected = selectedLanguage.value == SPANISH_LANGUAGE_CODE,
                         onClick = null
                     )
                 }
@@ -118,16 +120,16 @@ fun SettingsScreen(
                     modifier = Modifier
                         .padding(start = 12.dp, top = 12.dp, bottom = 12.dp)
                         .selectable(
-                            selected = selectedLanguage.value == "en",
+                            selected = selectedLanguage.value == ENGLISH_LANGUAGE_CODE,
                             enabled = true,
                             role = Role.RadioButton,
-                            onClick = { selectedLanguage.value = "en" }
+                            onClick = { selectedLanguage.value = ENGLISH_LANGUAGE_CODE }
                         )
                         .fillMaxWidth(0.3f)
                 ) {
-                    Text(text = "English")
+                    Text(text = stringResource(id = R.string.english_language))
                     RadioButton(
-                        selected = selectedLanguage.value == "en",
+                        selected = selectedLanguage.value == ENGLISH_LANGUAGE_CODE,
                         onClick = null
                     )
                 }
@@ -147,11 +149,11 @@ fun SettingsScreen(
                 modifier = Modifier
                     .padding(end = 20.dp)
             ) {
-                Text(text = "Cancel")
+                Text(text = stringResource(id = R.string.cancel_button))
             }
 
             Button(onClick = { showDialog.value = true }) {
-                Text(text = "Save")
+                Text(text = stringResource(id = R.string.save_button))
             }
         }
 
@@ -161,22 +163,26 @@ fun SettingsScreen(
     if (showDialog.value) {
         AlertDialog(
             onDismissRequest = { showDialog.value = false },
-            title = { Text(text = "Are you sure you want to save changes?") },
-            text = { Text(text = "Your app might have to restart so be aware of that") },
+            title = { Text(text = stringResource(id = R.string.save_changes_dialog_title)) },
+            text = { Text(text = stringResource(id = R.string.save_changes_dialog_text)) },
             confirmButton = {
                 TextButton(onClick = {
+
                     saveSettingsChanges(
                         currentLanguage = currentLanguage,
                         selectedLanguage = selectedLanguage.value,
                         navController = navController
                     )
+
+                    showDialog.value = false
+
                 }) {
-                    Text(text = "Save changes")
+                    Text(text = stringResource(id = R.string.save_button))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDialog.value = false }) {
-                    Text(text = "Cancel")
+                    Text(text = stringResource(id = R.string.cancel_button))
                 }
             }
         )
