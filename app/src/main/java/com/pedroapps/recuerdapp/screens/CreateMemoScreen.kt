@@ -1,5 +1,11 @@
 package com.pedroapps.recuerdapp.screens
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,7 +45,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.getString
+import androidx.core.app.ActivityOptionsCompat
+import androidx.core.content.ContextCompat
 import com.pedroapps.recuerdapp.R
 import com.pedroapps.recuerdapp.components.MyTimePickerDialog
 import com.pedroapps.recuerdapp.utils.formatTime
@@ -51,11 +58,20 @@ import java.time.ZoneOffset
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateMemoScreen(
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    foregroundLocationLauncher: ActivityResultLauncher<Array<String>>
 ) {
+    //TODO(check if the permissions are granted here, if not, launch the permission requester here,
+    // when the screen first loads up)
+
+    //TODO(these lines break the preview, when preview is no longer needed we can uncomment them)
     val context = LocalContext.current
-    val initialTimeValue: String = getString( context, R.string.selected_time_initial_value )
-    val initialDateValue: String = getString( context, R.string.selected_date_initial_value )
+//    val initialTimeValue: String = getString( context, R.string.selected_time_initial_value )
+//    val initialDateValue: String = getString( context, R.string.selected_date_initial_value )
+
+    val initialTimeValue = "No selected time"
+    val initialDateValue = "No date selected"
+    val initialPlaceValue = "No place selected"
 
     val memo = remember {
         mutableStateOf("")
@@ -162,6 +178,26 @@ fun CreateMemoScreen(
         )
 
 
+        OutlinedTextField(
+            value = "No place selected",
+            onValueChange = {},
+            label = { Text(text = "Where?") },
+            enabled = false,
+            colors = OutlinedTextFieldDefaults.colors(
+                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 12.dp, end = 12.dp, top = 20.dp)
+                .clickable {
+                    openMap(context, foregroundLocationLauncher)
+                }
+        )
+
+
     }
 
 
@@ -264,9 +300,59 @@ fun dismissTimePicker(
 }
 
 
+fun openMap(context: Context, permissionLauncher: ActivityResultLauncher<Array<String>>) {
+    when {
+        (isPermissionGranted(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) && isPermissionGranted(
+            context,
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION
+        )) -> {
+            //TODO(both permissions are granted, so open the map here)
+            Toast.makeText(context, "Opening map...", Toast.LENGTH_SHORT).show()
+        }
+
+
+        else -> {
+            //TODO(permissions not granted, so request the permissions here)
+            val permissions = arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+
+            permissionLauncher.launch(permissions)
+        }
+    }
+}
+
+
+fun isPermissionGranted(context: Context, permission: String): Boolean {
+    return (ContextCompat.checkSelfPermission(
+        context,
+        permission
+    ) == PackageManager.PERMISSION_GRANTED)
+
+}
+
+
 @Preview(showBackground = true)
 @Composable
 fun CreateMemoScreenPreview() {
     val paddingValues = PaddingValues()
-    CreateMemoScreen(paddingValues = paddingValues)
+    val permissionLauncher = object : ActivityResultLauncher<Array<String>>() {
+        override fun launch(input: Array<String>?, options: ActivityOptionsCompat?) {
+            TODO("Not yet implemented")
+        }
+
+        override fun unregister() {
+            TODO("Not yet implemented")
+        }
+
+        override fun getContract(): ActivityResultContract<Array<String>, *> {
+            TODO("Not yet implemented")
+        }
+    }
+
+    CreateMemoScreen(paddingValues = paddingValues, foregroundLocationLauncher = permissionLauncher)
 }
