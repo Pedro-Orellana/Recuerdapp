@@ -1,7 +1,12 @@
 package com.pedroapps.recuerdapp
 
+import android.Manifest
+import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.AnimatedContent
@@ -50,6 +55,29 @@ class MainActivity : AppCompatActivity() {
 
         val currentLanguage = AppCompatDelegate.getApplicationLocales().toLanguageTags()
 
+
+        val backgroundPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { permissionIsGranted ->
+                val message = if (permissionIsGranted) {
+                    "All permissions granted!"
+                } else "You did not grant all permissions..."
+
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+            }
+
+
+        val activityLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            if (permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                    backgroundPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            }
+        }
+
+
+
+
         setContent {
 
             val factory =
@@ -87,7 +115,10 @@ class MainActivity : AppCompatActivity() {
                         if (isAppStarting) {
                             RecuerdappLogo()
                         } else {
-                            Container(viewModel = viewModel)
+                            Container(
+                                viewModel = viewModel,
+                                foregroundLocationLauncher = activityLauncher
+                            )
                         }
 
                     }
@@ -103,7 +134,8 @@ class MainActivity : AppCompatActivity() {
 
 @Composable
 fun Container(
-    viewModel: MainViewModel
+    viewModel: MainViewModel,
+    foregroundLocationLauncher: ActivityResultLauncher<Array<String>>
 ) {
     //dependencies
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -158,7 +190,10 @@ fun Container(
                 }
 
                 composable(route = Destinations.CreateMemoScreen) {
-                    CreateMemoScreen(paddingValues = paddingValues)
+                    CreateMemoScreen(
+                        paddingValues = paddingValues,
+                        foregroundLocationLauncher = foregroundLocationLauncher
+                    )
                 }
 
                 composable(route = Destinations.MemoDetailsScreen) {
@@ -191,3 +226,4 @@ fun RecuerdappLogo() {
         )
     }
 }
+
