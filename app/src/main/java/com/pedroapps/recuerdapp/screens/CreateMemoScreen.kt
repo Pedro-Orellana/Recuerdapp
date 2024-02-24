@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DatePickerState
@@ -35,6 +35,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,8 +46,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.pedroapps.recuerdapp.R
 import com.pedroapps.recuerdapp.components.MyTimePickerDialog
 import com.pedroapps.recuerdapp.utils.formatTime
@@ -59,12 +61,9 @@ import java.time.ZoneOffset
 @Composable
 fun CreateMemoScreen(
     paddingValues: PaddingValues,
-    foregroundLocationLauncher: ActivityResultLauncher<Array<String>>
+    navController: NavHostController
 ) {
-    //TODO(check if the permissions are granted here, if not, launch the permission requester here,
-    // when the screen first loads up)
 
-    //TODO(these lines break the preview, when preview is no longer needed we can uncomment them)
     val context = LocalContext.current
 //    val initialTimeValue: String = getString( context, R.string.selected_time_initial_value )
 //    val initialDateValue: String = getString( context, R.string.selected_date_initial_value )
@@ -178,25 +177,31 @@ fun CreateMemoScreen(
         )
 
 
-        OutlinedTextField(
-            value = "No place selected",
-            onValueChange = {},
-            label = { Text(text = "Where?") },
-            enabled = false,
-            colors = OutlinedTextFieldDefaults.colors(
-                disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                disabledBorderColor = MaterialTheme.colorScheme.outline,
-                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            ),
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 12.dp, end = 12.dp, top = 20.dp)
-                .clickable {
-                    openMap(context, foregroundLocationLauncher)
-                }
-        )
+                .padding(top = 50.dp)
+        ) {
+            Button(
+                onClick = {
+                    //TODO(save the information to database here)
+                    navController.popBackStack()
+                },
+                modifier = Modifier
+                    .padding(end = 20.dp)
+            ) {
+                Text(text = stringResource(id = R.string.save_button))
+            }
 
+            Button(
+                onClick = {
+                    navController.popBackStack()
+                }) {
+                Text(text = stringResource(id = R.string.cancel_button))
+            }
+        }
 
     }
 
@@ -340,19 +345,10 @@ fun isPermissionGranted(context: Context, permission: String): Boolean {
 @Composable
 fun CreateMemoScreenPreview() {
     val paddingValues = PaddingValues()
-    val permissionLauncher = object : ActivityResultLauncher<Array<String>>() {
-        override fun launch(input: Array<String>?, options: ActivityOptionsCompat?) {
-            TODO("Not yet implemented")
-        }
+    val navController = rememberNavController()
 
-        override fun unregister() {
-            TODO("Not yet implemented")
-        }
-
-        override fun getContract(): ActivityResultContract<Array<String>, *> {
-            TODO("Not yet implemented")
-        }
-    }
-
-    CreateMemoScreen(paddingValues = paddingValues, foregroundLocationLauncher = permissionLauncher)
+    CreateMemoScreen(
+        paddingValues = paddingValues,
+        navController = navController
+    )
 }

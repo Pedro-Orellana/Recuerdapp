@@ -1,12 +1,7 @@
 package com.pedroapps.recuerdapp
 
-import android.Manifest
-import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.AnimatedContent
@@ -38,6 +33,7 @@ import androidx.navigation.compose.rememberNavController
 import com.pedroapps.recuerdapp.components.BottomNavigationBar
 import com.pedroapps.recuerdapp.components.DrawerContent
 import com.pedroapps.recuerdapp.components.TopNavigationBar
+import com.pedroapps.recuerdapp.data.database.RecuerdappDatabase
 import com.pedroapps.recuerdapp.screens.CreateMemoScreen
 import com.pedroapps.recuerdapp.screens.Destinations
 import com.pedroapps.recuerdapp.screens.HomeScreen
@@ -53,35 +49,14 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val database = RecuerdappDatabase.getInstance(this)
+
         val currentLanguage = AppCompatDelegate.getApplicationLocales().toLanguageTags()
-
-
-        val backgroundPermissionLauncher =
-            registerForActivityResult(ActivityResultContracts.RequestPermission()) { permissionIsGranted ->
-                val message = if (permissionIsGranted) {
-                    "All permissions granted!"
-                } else "You did not grant all permissions..."
-
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-            }
-
-
-        val activityLauncher = registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { permissions ->
-            if (permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false)) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                    backgroundPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-            }
-        }
-
-
-
 
         setContent {
 
             val factory =
-                MainViewModel.Companion.MainViewModelFactory(currentLanguage = currentLanguage)
+                MainViewModel.Companion.MainViewModelFactory(currentLanguage = currentLanguage, database = database)
             val viewModel: MainViewModel = viewModel(factory = factory)
 
             var appStarting by remember {
@@ -117,7 +92,6 @@ class MainActivity : AppCompatActivity() {
                         } else {
                             Container(
                                 viewModel = viewModel,
-                                foregroundLocationLauncher = activityLauncher
                             )
                         }
 
@@ -135,7 +109,6 @@ class MainActivity : AppCompatActivity() {
 @Composable
 fun Container(
     viewModel: MainViewModel,
-    foregroundLocationLauncher: ActivityResultLauncher<Array<String>>
 ) {
     //dependencies
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -192,7 +165,7 @@ fun Container(
                 composable(route = Destinations.CreateMemoScreen) {
                     CreateMemoScreen(
                         paddingValues = paddingValues,
-                        foregroundLocationLauncher = foregroundLocationLauncher
+                        navController = navController
                     )
                 }
 
