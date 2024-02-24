@@ -1,11 +1,12 @@
-package com.pedroapps.recuerdapp.database
+package com.pedroapps.recuerdapp.data.database
 
 import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.pedroapps.recuerdapp.viewmodels.RecuerdappState
 
 abstract class RecuerdappDatabase: RoomDatabase() {
+
+    abstract fun memoDao() : MemoDao
 
     companion object {
 
