@@ -56,9 +56,10 @@ dependencies {
 
     val appcompatVersion = "1.6.1"
 
-
-
     implementation("androidx.core:core-ktx:1.12.0")
+    //DEPENDENCY FOR NOTIFICATIONS
+    //implementation("androidx.core:core-ktx:2.2.0")
+
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation(platform("androidx.compose:compose-bom:2024.02.00"))
@@ -84,6 +85,7 @@ dependencies {
     //DATABASE DEPENDENCIES
     implementation("androidx.room:room-runtime:$roomVersion")
     annotationProcessor("androidx.room:room-compiler:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
 
     //APPCOMPAT FOR LOCALE SUPPORT
@@ -91,6 +93,7 @@ dependencies {
 
     //KTX EXTENSION FOR VIEWMODEL SCOPE
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+
 
 
 }

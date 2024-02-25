@@ -1,7 +1,19 @@
 package com.pedroapps.recuerdapp
 
+import android.Manifest
+import android.app.AlarmManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.AnimatedContent
@@ -24,8 +36,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -34,6 +50,7 @@ import com.pedroapps.recuerdapp.components.BottomNavigationBar
 import com.pedroapps.recuerdapp.components.DrawerContent
 import com.pedroapps.recuerdapp.components.TopNavigationBar
 import com.pedroapps.recuerdapp.data.database.RecuerdappDatabase
+import com.pedroapps.recuerdapp.notifications.RecuerdappNotificationReceiver
 import com.pedroapps.recuerdapp.screens.CreateMemoScreen
 import com.pedroapps.recuerdapp.screens.Destinations
 import com.pedroapps.recuerdapp.screens.HomeScreen
@@ -41,22 +58,54 @@ import com.pedroapps.recuerdapp.screens.MemoDetailsScreen
 import com.pedroapps.recuerdapp.screens.SettingsScreen
 import com.pedroapps.recuerdapp.screens.TestScreen
 import com.pedroapps.recuerdapp.ui.theme.RecuerdappTheme
+import com.pedroapps.recuerdapp.utils.NOTIFICATION_CHANNEL_ID
+import com.pedroapps.recuerdapp.utils.NOTIFICATION_CHANNEL_NAME
 import com.pedroapps.recuerdapp.viewmodels.MainViewModel
 import kotlinx.coroutines.delay
 
 class MainActivity : AppCompatActivity() {
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        //create database
         val database = RecuerdappDatabase.getInstance(this)
+
+        //create notification channel
+        createRecuerdappNotificationChannel(this)
+
+        //immediately ask for permission to receive notifications
+        val notificationPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                //TODO(do something more useful here)
+                val message =
+                    if (isGranted) "Notifications are allowed" else "Please grant the permission to allow notifications"
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+            }
+
+        //immediately ask for permission to set alarms
+        val alarmSchedulePermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                //TODO(do something more useful here)
+                val message =
+                    if (isGranted) "Alarm schedule permissions are granted" else "Please allow to schedule alarms"
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+            }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+            alarmSchedulePermissionLauncher.launch(Manifest.permission.SCHEDULE_EXACT_ALARM)
 
         val currentLanguage = AppCompatDelegate.getApplicationLocales().toLanguageTags()
 
         setContent {
 
             val factory =
-                MainViewModel.Companion.MainViewModelFactory(currentLanguage = currentLanguage, database = database)
+                MainViewModel.Companion.MainViewModelFactory(
+                    currentLanguage = currentLanguage,
+                    database = database
+                )
             val viewModel: MainViewModel = viewModel(factory = factory)
 
             var appStarting by remember {
@@ -114,6 +163,8 @@ fun Container(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val navController = rememberNavController()
     val appState = viewModel.uiState.collectAsState()
+
+    val context = LocalContext.current
 
     ModalNavigationDrawer(
         drawerContent = {
@@ -175,7 +226,15 @@ fun Container(
 
                 //TODO delete this when no longer needed
                 composable(route = Destinations.TestScreen) {
-                    TestScreen(paddingValues = paddingValues)
+                    TestScreen(
+                        paddingValues = paddingValues,
+                        showTestNotification = {
+                            showTestNotification(context)
+                        },
+                        showNotificationTenSeconds = {
+                            showTestNotificationInTenSeconds(context)
+                        }
+                    )
                 }
             }
         }
@@ -198,5 +257,66 @@ fun RecuerdappLogo() {
             fontSize = 28.sp
         )
     }
+}
+
+
+fun createRecuerdappNotificationChannel(context: Context) {
+    val channel = NotificationChannel(
+        NOTIFICATION_CHANNEL_ID,
+        NOTIFICATION_CHANNEL_NAME,
+        NotificationManager.IMPORTANCE_HIGH
+    )
+    val manager = context.getSystemService(NotificationManager::class.java)
+    manager.createNotificationChannel(channel)
+}
+
+
+fun showTestNotification(context: Context) {
+
+    with(NotificationManagerCompat.from(context)) {
+        val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle("Remember to...")
+            .setContentText("Remember to drink 8 glasses of water a day!")
+
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
+        notify(1, builder.build())
+    }
+}
+
+
+fun showTestNotificationInTenSeconds(context: Context) {
+
+    val notificationIntent = Intent(context, RecuerdappNotificationReceiver::class.java)
+    //TODO(intent.putExtra to pass the relevant information)
+    val notificationPendingIntent = PendingIntent.getBroadcast(
+        context,
+        100,
+        notificationIntent,
+        PendingIntent.FLAG_IMMUTABLE
+    )
+    val time = System.currentTimeMillis() + 10_000
+
+    val alarmManager = context.getSystemService(AlarmManager::class.java)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (alarmManager.canScheduleExactAlarms()) {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, time, notificationPendingIntent)
+        }
+    }
+
+
 }
 
