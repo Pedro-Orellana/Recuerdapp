@@ -75,6 +75,10 @@ class MainViewModel(
         }
     }
 
+    fun saveMemo(memo: String, millis: Long) {
+        //TODO(finish this method)
+    }
+
 
     fun getAllMemos()  {
         viewModelScope.launch(Dispatchers.IO) {

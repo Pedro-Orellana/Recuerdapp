@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.pedroapps.recuerdapp.R
+import com.pedroapps.recuerdapp.utils.MEMO_STRING_EXTRA
 import com.pedroapps.recuerdapp.utils.NOTIFICATION_CHANNEL_ID
 
 class RecuerdappNotificationReceiver: BroadcastReceiver() {
@@ -16,10 +17,11 @@ class RecuerdappNotificationReceiver: BroadcastReceiver() {
         if (context != null && intent != null) {
 
             val manager = context.getSystemService(NotificationManager::class.java)
+            val content = intent.getStringExtra(MEMO_STRING_EXTRA) ?: "NO CONTENT"
 
             val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
-                .setContentTitle("After 10 seconds!")
-                .setContentText("You received this notification 10 seconds after clicking the button")
+                .setContentTitle("Memo!")
+                .setContentText(content)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
 
             manager.notify(2, notification.build())

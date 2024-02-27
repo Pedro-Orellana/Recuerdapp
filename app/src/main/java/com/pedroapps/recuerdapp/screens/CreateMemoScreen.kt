@@ -1,10 +1,5 @@
 package com.pedroapps.recuerdapp.screens
 
-import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
-import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,7 +30,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,22 +40,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.pedroapps.recuerdapp.R
 import com.pedroapps.recuerdapp.components.MyTimePickerDialog
 import com.pedroapps.recuerdapp.utils.formatTime
 import com.pedroapps.recuerdapp.utils.formatToStringDate
+import com.pedroapps.recuerdapp.utils.getLocalDate
+import com.pedroapps.recuerdapp.utils.getLocalTime
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.ZoneOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateMemoScreen(
     paddingValues: PaddingValues,
-    navController: NavHostController
+    navController: NavHostController,
+    saveAndScheduleMemo: (String, Long) -> Unit
 ) {
 
     val context = LocalContext.current
@@ -185,9 +182,15 @@ fun CreateMemoScreen(
                 .padding(top = 50.dp)
         ) {
             Button(
+
                 onClick = {
-                    //TODO(save the information to database here)
-                    navController.popBackStack()
+                    performSaveAndScheduleMemo(
+                        memo = memo.value,
+                        timeState = timePickerState,
+                        dateState = datePickerState,
+                        saveAndScheduleMemo = saveAndScheduleMemo,
+                        navController = navController
+                    )
                 },
                 modifier = Modifier
                     .padding(end = 20.dp)
@@ -304,39 +307,22 @@ fun dismissTimePicker(
     formattedTime.value = initialValue
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+fun performSaveAndScheduleMemo(
+    memo: String,
+    timeState: TimePickerState,
+    dateState: DatePickerState,
+    saveAndScheduleMemo: (String, Long) -> Unit,
+    navController: NavHostController
+) {
 
-fun openMap(context: Context, permissionLauncher: ActivityResultLauncher<Array<String>>) {
-    when {
-        (isPermissionGranted(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) && isPermissionGranted(
-            context,
-            Manifest.permission.ACCESS_BACKGROUND_LOCATION
-        )) -> {
-            //TODO(both permissions are granted, so open the map here)
-            Toast.makeText(context, "Opening map...", Toast.LENGTH_SHORT).show()
-        }
+    val localTime = timeState.getLocalTime()
+    val localDate = dateState.getLocalDate() ?: return
 
-
-        else -> {
-            //TODO(permissions not granted, so request the permissions here)
-            val permissions = arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            )
-
-            permissionLauncher.launch(permissions)
-        }
-    }
-}
-
-
-fun isPermissionGranted(context: Context, permission: String): Boolean {
-    return (ContextCompat.checkSelfPermission(
-        context,
-        permission
-    ) == PackageManager.PERMISSION_GRANTED)
+    val localDateTime = LocalDateTime.of(localDate, localTime)
+    val millis = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    saveAndScheduleMemo(memo, millis)
+    navController.popBackStack()
 
 }
 
@@ -349,6 +335,7 @@ fun CreateMemoScreenPreview() {
 
     CreateMemoScreen(
         paddingValues = paddingValues,
-        navController = navController
+        navController = navController,
+        saveAndScheduleMemo = { _, _ -> }
     )
 }
