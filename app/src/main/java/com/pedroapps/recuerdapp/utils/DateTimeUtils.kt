@@ -6,6 +6,7 @@ import androidx.compose.material3.TimePickerState
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.Month
 import java.time.format.DateTimeFormatter
 import java.util.Date
@@ -33,6 +34,24 @@ fun DatePickerState.formatToStringDate(languageCode: String, initialValue: Strin
 
 
     return initialValue
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+fun DatePickerState.getLocalDate() : LocalDate? {
+
+    var currentDate: Date? = null
+    this.selectedDateMillis?.let {
+        currentDate = Date.from(Instant.ofEpochMilli(it))
+    }
+
+    currentDate?.let {
+        val stringDate = it.toInstant().toString()
+        val dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME
+        return LocalDate.parse(stringDate, dateTimeFormatter)
+    }
+
+    return null
 }
 
 
@@ -77,4 +96,10 @@ fun getEnglishStringDate(currentDate: LocalDate): String {
 @OptIn(ExperimentalMaterial3Api::class)
 fun TimePickerState.formatTime() : String {
     return "$hour: $minute"
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+fun TimePickerState.getLocalTime(): LocalTime {
+    return LocalTime.of(hour, minute)
 }

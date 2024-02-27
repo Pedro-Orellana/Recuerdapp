@@ -10,7 +10,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,6 +20,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -58,6 +58,8 @@ import com.pedroapps.recuerdapp.screens.MemoDetailsScreen
 import com.pedroapps.recuerdapp.screens.SettingsScreen
 import com.pedroapps.recuerdapp.screens.TestScreen
 import com.pedroapps.recuerdapp.ui.theme.RecuerdappTheme
+import com.pedroapps.recuerdapp.utils.MEMO_PENDING_INTENT_CODE
+import com.pedroapps.recuerdapp.utils.MEMO_STRING_EXTRA
 import com.pedroapps.recuerdapp.utils.NOTIFICATION_CHANNEL_ID
 import com.pedroapps.recuerdapp.utils.NOTIFICATION_CHANNEL_NAME
 import com.pedroapps.recuerdapp.viewmodels.MainViewModel
@@ -155,6 +157,7 @@ class MainActivity : AppCompatActivity() {
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Container(
     viewModel: MainViewModel,
@@ -216,7 +219,23 @@ fun Container(
                 composable(route = Destinations.CreateMemoScreen) {
                     CreateMemoScreen(
                         paddingValues = paddingValues,
-                        navController = navController
+                        navController = navController,
+
+                        saveAndScheduleMemo = { memo, millis ->
+
+                            //TODO(save the memo in the database)
+
+//                            viewModel.saveMemo(
+//                                memo = memo,
+//                                millis = millis
+//                            )
+
+                            scheduleMemo(
+                                memo = memo,
+                                millis = millis,
+                                context = context
+                            )
+                        }
                     )
                 }
 
@@ -301,7 +320,7 @@ fun showTestNotification(context: Context) {
 fun showTestNotificationInTenSeconds(context: Context) {
 
     val notificationIntent = Intent(context, RecuerdappNotificationReceiver::class.java)
-    //TODO(intent.putExtra to pass the relevant information)
+    notificationIntent.putExtra(MEMO_STRING_EXTRA, "10 seconds have passed since you decided to put this notification!")
     val notificationPendingIntent = PendingIntent.getBroadcast(
         context,
         100,
@@ -317,6 +336,36 @@ fun showTestNotificationInTenSeconds(context: Context) {
         }
     }
 
+}
+
+
+fun scheduleMemo(
+    memo: String,
+    millis: Long,
+    context: Context
+) {
+
+    val memoIntent = Intent(context, RecuerdappNotificationReceiver::class.java)
+    memoIntent.putExtra(MEMO_STRING_EXTRA, memo)
+
+    val pendingMemoIntent = PendingIntent.getBroadcast(
+        context,
+        MEMO_PENDING_INTENT_CODE,
+        memoIntent,
+        PendingIntent.FLAG_MUTABLE
+    )
+
+    val alarmManager = context.getSystemService(AlarmManager::class.java)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+
+        if (alarmManager.canScheduleExactAlarms()) {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, millis, pendingMemoIntent)
+        }
+
+    }
+
 
 }
+
+
 
