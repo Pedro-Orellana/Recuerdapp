@@ -44,3 +44,9 @@ fun MyTimePickerDialog(
 
     }
 }
+
+
+@Composable
+fun MemoCard() {
+    //TODO(finish this method here)
+}

@@ -40,6 +40,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.getString
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.pedroapps.recuerdapp.R
@@ -56,18 +57,18 @@ import java.time.ZoneOffset
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateMemoScreen(
+    currentLanguageCode: String,
     paddingValues: PaddingValues,
     navController: NavHostController,
     saveAndScheduleMemo: (String, Long) -> Unit
 ) {
 
     val context = LocalContext.current
-//    val initialTimeValue: String = getString( context, R.string.selected_time_initial_value )
-//    val initialDateValue: String = getString( context, R.string.selected_date_initial_value )
+    val initialTimeValue: String = getString( context, R.string.selected_time_initial_value )
+    val initialDateValue: String = getString( context, R.string.selected_date_initial_value )
 
-    val initialTimeValue = "No selected time"
-    val initialDateValue = "No date selected"
-    val initialPlaceValue = "No place selected"
+//    val initialTimeValue = "No selected time"
+//    val initialDateValue = "No date selected"
 
     val memo = remember {
         mutableStateOf("")
@@ -96,8 +97,7 @@ fun CreateMemoScreen(
 
     val formattedDate = remember {
         derivedStateOf {
-            //TODO("This is hardcoded right now, change to update on language change)
-            datePickerState.formatToStringDate("en", initialValue = initialDateValue)
+            datePickerState.formatToStringDate(currentLanguageCode, initialValue = initialDateValue)
         }
     }
 
@@ -330,10 +330,12 @@ fun performSaveAndScheduleMemo(
 @Preview(showBackground = true)
 @Composable
 fun CreateMemoScreenPreview() {
+    val currentLanguageCode = "es"
     val paddingValues = PaddingValues()
     val navController = rememberNavController()
 
     CreateMemoScreen(
+        currentLanguageCode = currentLanguageCode,
         paddingValues = paddingValues,
         navController = navController,
         saveAndScheduleMemo = { _, _ -> }

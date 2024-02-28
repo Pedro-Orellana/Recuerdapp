@@ -11,8 +11,6 @@ data class MemoRoomEntity (
     val id: Int = 0,
     @ColumnInfo(name = "memo_string")
     val memo: String,
-    @ColumnInfo(name = "memo_day")
-    val day: String,
-    @ColumnInfo(name = "memo_time")
-    val time: String
+    @ColumnInfo(name = "memo_millis")
+    val millis: Long
 )

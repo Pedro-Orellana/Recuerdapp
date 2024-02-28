@@ -204,7 +204,9 @@ fun Container(
                 composable(route = Destinations.HomeScreen) {
                     HomeScreen(
                         paddingValues = paddingValues,
-                        navController = navController
+                        navController = navController,
+                        savedMemos = appState.value.allMemos,
+                        getAllSavedMemos = viewModel::getAllMemos
                     )
                 }
 
@@ -218,6 +220,7 @@ fun Container(
 
                 composable(route = Destinations.CreateMemoScreen) {
                     CreateMemoScreen(
+                        currentLanguageCode = appState.value.currentLanguage,
                         paddingValues = paddingValues,
                         navController = navController,
 

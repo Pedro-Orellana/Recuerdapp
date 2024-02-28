@@ -7,7 +7,7 @@ class MemoDataRepository(
     private val database: RecuerdappDatabase
 ) {
 
-    suspend fun createNewMemo(memo: MemoUI) {
+    suspend fun saveNewMemo(memo: MemoUI) {
         val entity = memoUiToEntity(memo)
         database.memoDao().insertNewMemo(entity)
     }
@@ -37,8 +37,7 @@ class MemoDataRepository(
         return MemoUI(
             id = entity.id,
             memo = entity.memo,
-            day = entity.day,
-            time = entity.time
+            millis = entity.millis
         )
     }
 
@@ -47,8 +46,7 @@ class MemoDataRepository(
         return MemoRoomEntity(
             id = memo.id,
             memo = memo.memo,
-            day = memo.day,
-            time = memo.time
+            millis = memo.millis
 
         )
     }
