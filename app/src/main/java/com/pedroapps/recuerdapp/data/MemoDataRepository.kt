@@ -7,8 +7,8 @@ class MemoDataRepository(
     private val database: RecuerdappDatabase
 ) {
 
-    suspend fun saveNewMemo(memo: MemoUI) {
-        val entity = memoUiToEntity(memo)
+    suspend fun saveNewMemo(memo: String, millis: Long) {
+        val entity = MemoRoomEntity(memo = memo, millis = millis)
         database.memoDao().insertNewMemo(entity)
     }
 

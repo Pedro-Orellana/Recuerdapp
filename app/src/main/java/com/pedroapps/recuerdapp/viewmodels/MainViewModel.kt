@@ -63,7 +63,9 @@ class MainViewModel(
     //DATABASE FUNCTIONS
 
     fun saveNewMemo(memo: String, millis: Long) {
-        //TODO(finish this method)
+        viewModelScope.launch(Dispatchers.IO) {
+            dataRepository.saveNewMemo(memo, millis)
+        }
     }
 
 

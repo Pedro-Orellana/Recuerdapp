@@ -8,6 +8,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Month
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Date
 
@@ -125,6 +126,76 @@ fun getSpanishStringDate(currentDate: LocalDate) : String {
     val year = currentDate.year
 
     return "$dayOfWeek $day de $month del $year"
+}
+
+
+fun ZonedDateTime.getEnglishScheduledTime() : String {
+
+    //TODO(format this method better to fill in minutes with zeroes when needed
+    // and add AM or PM accordingly)
+
+    val dayOfWeek = when (dayOfWeek) {
+        DayOfWeek.MONDAY -> "Monday"
+        DayOfWeek.TUESDAY -> "Tuesday"
+        DayOfWeek.WEDNESDAY -> "Wednesday"
+        DayOfWeek.THURSDAY -> "Thursday"
+        DayOfWeek.FRIDAY -> "Friday"
+        DayOfWeek.SATURDAY -> "Saturday"
+        DayOfWeek.SUNDAY -> "Sunday"
+        null -> ""
+    }
+
+    val month = when (month) {
+        Month.JANUARY -> "January"
+        Month.FEBRUARY -> "February"
+        Month.MARCH -> "March"
+        Month.APRIL -> "April"
+        Month.MAY -> "May"
+        Month.JUNE -> "June"
+        Month.JULY -> "July"
+        Month.AUGUST -> "August"
+        Month.SEPTEMBER -> "September"
+        Month.OCTOBER -> "October"
+        Month.NOVEMBER -> "November"
+        Month.DECEMBER -> "December"
+        null -> ""
+    }
+
+    return "$month, $dayOfWeek $dayOfMonth at $hour:$minute"
+}
+
+fun ZonedDateTime.getSpanishScheduledTime() : String {
+
+    //TODO(format this method better to fill in minutes with zeroes when needed
+    // and add AM or PM accordingly)
+
+    val dayOfWeek = when (dayOfWeek) {
+        DayOfWeek.MONDAY -> "Lunes"
+        DayOfWeek.TUESDAY -> "Martes"
+        DayOfWeek.WEDNESDAY -> "Miércoles"
+        DayOfWeek.THURSDAY -> "Jueves"
+        DayOfWeek.FRIDAY -> "Viernes"
+        DayOfWeek.SATURDAY -> "Sábado"
+        DayOfWeek.SUNDAY -> "Domingo"
+        null -> ""
+    }
+
+    val month = when (month) {
+        Month.JANUARY -> "Enero"
+        Month.FEBRUARY -> "Febrero"
+        Month.MARCH -> "Marzo"
+        Month.APRIL -> "Abril"
+        Month.MAY -> "Mayo"
+        Month.JUNE -> "Junio"
+        Month.JULY -> "Julio"
+        Month.AUGUST -> "Agosto"
+        Month.SEPTEMBER -> "Septiembre"
+        Month.OCTOBER -> "Octubre"
+        Month.NOVEMBER -> "Noviembre"
+        Month.DECEMBER -> "Diciembre"
+        null -> ""
+    }
+    return "$dayOfWeek $dayOfMonth de $month, a las $hour:$minute"
 }
 
 

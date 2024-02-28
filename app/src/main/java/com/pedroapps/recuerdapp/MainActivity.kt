@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -157,7 +156,7 @@ class MainActivity : AppCompatActivity() {
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun Container(
     viewModel: MainViewModel,
@@ -205,6 +204,7 @@ fun Container(
                     HomeScreen(
                         paddingValues = paddingValues,
                         navController = navController,
+                        languageCode = appState.value.currentLanguage,
                         savedMemos = appState.value.allMemos,
                         getAllSavedMemos = viewModel::getAllMemos
                     )
@@ -227,17 +227,18 @@ fun Container(
                         saveAndScheduleMemo = { memo, millis ->
 
                             //TODO(save the memo in the database)
-
-//                            viewModel.saveMemo(
-//                                memo = memo,
-//                                millis = millis
-//                            )
+                            viewModel.saveNewMemo(
+                                memo = memo,
+                                millis = millis
+                            )
 
                             scheduleMemo(
                                 memo = memo,
                                 millis = millis,
                                 context = context
                             )
+
+                            navController.popBackStack()
                         }
                     )
                 }
@@ -347,6 +348,9 @@ fun scheduleMemo(
     millis: Long,
     context: Context
 ) {
+
+    //TODO(test this method more. It seems like if you do the same intent code every time, only the time changes
+    // but not the content, so maybe pass a new intent code with every call to this method)
 
     val memoIntent = Intent(context, RecuerdappNotificationReceiver::class.java)
     memoIntent.putExtra(MEMO_STRING_EXTRA, memo)
