@@ -189,7 +189,6 @@ fun CreateMemoScreen(
                         timeState = timePickerState,
                         dateState = datePickerState,
                         saveAndScheduleMemo = saveAndScheduleMemo,
-                        navController = navController
                     )
                 },
                 modifier = Modifier
@@ -313,7 +312,6 @@ fun performSaveAndScheduleMemo(
     timeState: TimePickerState,
     dateState: DatePickerState,
     saveAndScheduleMemo: (String, Long) -> Unit,
-    navController: NavHostController
 ) {
 
     val localTime = timeState.getLocalTime()
@@ -322,7 +320,6 @@ fun performSaveAndScheduleMemo(
     val localDateTime = LocalDateTime.of(localDate, localTime)
     val millis = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
     saveAndScheduleMemo(memo, millis)
-    navController.popBackStack()
 
 }
 
