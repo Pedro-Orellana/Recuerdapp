@@ -61,21 +61,8 @@ class MainViewModel(
 
 
     //DATABASE FUNCTIONS
-    fun createNewMemo(memo: String, day: String, time: String) {
 
-        viewModelScope.launch(Dispatchers.IO) {
-
-            val newMemo = MemoUI(
-                memo = memo,
-                day = day,
-                time = time
-            )
-
-            dataRepository.createNewMemo(newMemo)
-        }
-    }
-
-    fun saveMemo(memo: String, millis: Long) {
+    fun saveNewMemo(memo: String, millis: Long) {
         //TODO(finish this method)
     }
 

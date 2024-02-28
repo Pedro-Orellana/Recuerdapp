@@ -26,8 +26,8 @@ fun DatePickerState.formatToStringDate(languageCode: String, initialValue: Strin
         val localDate = LocalDate.parse(stringDate, dateTimeFormatter)
 
         return when(languageCode) {
-            "en" -> getEnglishStringDate(localDate)
-            "es" -> "Something in Spanish"
+            ENGLISH_LANGUAGE_CODE -> getEnglishStringDate(localDate)
+            SPANISH_LANGUAGE_CODE -> getSpanishStringDate(localDate)
             else -> "Something in another language"
         }
     }
@@ -89,6 +89,42 @@ fun getEnglishStringDate(currentDate: LocalDate): String {
 
 
     return "$day, $month $numberDay of $year"
+}
+
+
+fun getSpanishStringDate(currentDate: LocalDate) : String {
+    val day = currentDate.dayOfMonth
+
+    val dayOfWeek = when(currentDate.dayOfWeek) {
+        DayOfWeek.MONDAY -> "Lunes"
+        DayOfWeek.TUESDAY -> "Martes"
+        DayOfWeek.WEDNESDAY -> "Miércoles"
+        DayOfWeek.THURSDAY -> "Jueves"
+        DayOfWeek.FRIDAY -> "Viernes"
+        DayOfWeek.SATURDAY -> "Sábado"
+        DayOfWeek.SUNDAY -> "Domingo"
+        else -> "Sin día"
+    }
+
+    val month = when(currentDate.month) {
+        Month.JANUARY -> "Enero"
+        Month.FEBRUARY -> "Febrero"
+        Month.MARCH -> "Marzo"
+        Month.APRIL -> "Abril"
+        Month.MAY -> "Mayo"
+        Month.JUNE -> "Junio"
+        Month.JULY -> "Julio"
+        Month.AUGUST -> "Agosto"
+        Month.SEPTEMBER ->"Septiembre"
+        Month.OCTOBER -> "Octubre"
+        Month.NOVEMBER -> "Noviembre"
+        Month.DECEMBER -> "Diciembre"
+        else -> "Sin mes"
+    }
+
+    val year = currentDate.year
+
+    return "$dayOfWeek $day de $month del $year"
 }
 
 

@@ -13,17 +13,37 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.pedroapps.recuerdapp.R
+import com.pedroapps.recuerdapp.data.MemoUI
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun HomeScreen(
     paddingValues: PaddingValues,
-    navController: NavHostController
+    navController: NavHostController,
+    savedMemos: List<MemoUI>,
+    getAllSavedMemos: () -> Unit
 ) {
 
+    LaunchedEffect(key1 = true) {
+        //get the latest list of memos from database every time we open this screen
+        getAllSavedMemos()
+    }
 
     Box(
         modifier = Modifier
@@ -31,13 +51,23 @@ fun HomeScreen(
             .padding(paddingValues = paddingValues)
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Top,
             modifier = Modifier
                 .fillMaxSize()
-            //    .padding(paddingValues = paddingValues)
         ) {
-            Text(text = "Main Screen content")
+            Text(
+                text = "Home",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Light,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(start = 12.dp, top = 12.dp)
+            )
+
+            savedMemos.forEach {
+                Text(text = it.memo)
+            }
+
             Button(
                 onClick = { navController.navigate(Destinations.MemoDetailsScreen) }
             ) {
@@ -58,4 +88,20 @@ fun HomeScreen(
 
     }
 
+}
+
+
+@Preview(showSystemUi = true)
+@Composable
+fun HomeScreenPreview() {
+    val paddingValues = PaddingValues()
+    val navController = rememberNavController()
+
+
+    HomeScreen(
+        paddingValues = paddingValues,
+        navController = navController,
+        savedMemos = listOf(MemoUI.getEmptyMemo()),
+        getAllSavedMemos = {}
+    )
 }
