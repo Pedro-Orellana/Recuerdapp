@@ -1,56 +1,55 @@
 package com.pedroapps.recuerdapp.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.pedroapps.recuerdapp.R
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.pedroapps.recuerdapp.data.MemoUI
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MemoDetailsScreen(
     paddingValues: PaddingValues,
-    memoUI: MemoUI
+    memoUI: MemoUI,
+    navController: NavHostController,
+    setMemoToUpdate: (MemoUI) -> Unit
 ) {
 
-    val memoString = remember {
-        mutableStateOf(memoUI.memo)
+    //TODO(change this so that it fetches the information from database
+    // not from the state, because it turns out it's not updated when it is editted)
+
+
+    val showDeleteDialog = remember {
+        mutableStateOf(false)
     }
 
-    val memoMillis = remember {
-        mutableLongStateOf(memoUI.millis)
-    }
-
-    val datePickerState = rememberDatePickerState()
-    val timePickerState = rememberTimePickerState()
 
     Column(
         horizontalAlignment = Alignment.Start,
@@ -67,76 +66,145 @@ fun MemoDetailsScreen(
             modifier = Modifier.padding(start = 20.dp, top = 12.dp)
         )
 
-        OutlinedTextField(
-            value = memoString.value,
-            onValueChange = { },
-            label = { Text(text = stringResource(id = R.string.memo_textfield_label)) },
-            minLines = 5,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 12.dp, end = 12.dp, top = 50.dp)
-                .clip(shape = RoundedCornerShape(8.dp))
-        )
-
-        OutlinedTextField(
-            value = "Something else",
-            onValueChange = { },
-            enabled = false,
-            label = { Text(text = stringResource(R.string.when_textfield_label)) },
-            colors = OutlinedTextFieldDefaults.colors(
-                disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                disabledBorderColor = MaterialTheme.colorScheme.outline,
-                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        Card(
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 12.dp
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 12.dp, end = 12.dp, top = 28.dp)
-                .clickable { }
-
-        )
-
-
-        OutlinedTextField(
-            value = "Third something else",
-            onValueChange = {},
-            enabled = false,
-            label = { Text(text = "At what time?") },
-            colors = OutlinedTextFieldDefaults.colors(
-                disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                disabledBorderColor = MaterialTheme.colorScheme.outline,
-                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 12.dp, end = 12.dp, top = 28.dp)
-                .clickable {}
-
-        )
-
-
-        Row(
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 12.dp, top = 20.dp)
+                .height(IntrinsicSize.Max)
+                .padding(start = 20.dp, end = 20.dp, top = 50.dp)
         ) {
-            OutlinedButton(onClick = { /*TODO*/ }) {
-                Text(text = "Edit")
+
+            Column(
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.Top,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 20.dp)
+            )
+            {
+
+                Text(
+                    text = "Memo ID:",
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 18.sp
+                )
+                Text(text = memoUI.id.toString())
+
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp)
+                )
+
+
+                Text(
+                    text = "Memo:",
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 18.sp
+
+                )
+                Text(text = memoUI.memo)
+
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp)
+                )
+
+                Text(
+                    text = "remember at:",
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 18.sp
+                )
+                Text(text = memoUI.millis.toString())
+
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    OutlinedButton(
+                        onClick = {
+
+                            setMemoToUpdate(memoUI)
+                            navController.navigate(Destinations.CreateMemoScreen)
+
+                        }) {
+                        Text(text = "Edit")
+
+                    }
+
+                    TextButton(
+                        onClick = { showDeleteDialog.value = true },
+                        modifier = Modifier
+                            .padding(start = 12.dp)
+                    ) {
+                        Text(
+                            text = "Delete",
+                            color = Color.Red
+                        )
+                    }
+
+                }
+
             }
 
-            TextButton(
-                onClick = { /*TODO*/ },
-                modifier = Modifier
-                    .padding(start = 12.dp)
-            ) {
-                Text(text = "Delete")
-            }
         }
 
     }
+
+    if (showDeleteDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog.value = false },
+            icon = {
+                Icon(
+                    imageVector = Icons.Outlined.Delete,
+                    contentDescription = "delete icon",
+                    tint = Color.Red
+                )
+            },
+
+            title = {
+                Text(
+                    text = "Are you sure you want to delete this memo?",
+                    textAlign = TextAlign.Center
+                )
+            },
+
+            text = {
+                Text(
+                    text = "If you delete this memo it will not be scheduled anymore, and you won't be able to recover it",
+                    textAlign = TextAlign.Center
+                )
+            },
+
+            confirmButton = {
+
+                TextButton(onClick = { /*TODO*/ }) {
+                    Text(
+                        text = "Delete",
+                        color = Color.Red
+                    )
+                }
+            },
+
+
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog.value = false }) {
+                    Text(text = "Cancel")
+                }
+            }
+        )
+    }
+
+
 }
 
 
@@ -146,12 +214,17 @@ fun MemoDetailScreenPreview() {
 
     val paddingValues = PaddingValues()
     val emptyMemo = MemoUI.getEmptyMemo()
+    val navController = rememberNavController()
 
     emptyMemo.memo = "Please remember to have a great day today!"
+    emptyMemo.millis = System.currentTimeMillis()
 
     MemoDetailsScreen(
         paddingValues = paddingValues,
-        memoUI = emptyMemo
+        memoUI = emptyMemo,
+        navController = navController,
+        setMemoToUpdate = { }
+
     )
 
 }

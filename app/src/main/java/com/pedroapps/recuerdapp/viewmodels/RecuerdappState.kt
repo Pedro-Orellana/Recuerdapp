@@ -7,5 +7,6 @@ data class RecuerdappState(
     var currentDestination: String = Destinations.HomeScreen,
     var currentLanguage: String,
     var allMemos: List<MemoUI> = listOf(),
-    var currentMemo: MemoUI = MemoUI.getEmptyMemo()
+    var currentMemo: MemoUI = MemoUI.getEmptyMemo(),
+    var memoToUpdate: MemoUI? = null
 )

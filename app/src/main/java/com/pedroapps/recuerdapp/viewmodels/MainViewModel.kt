@@ -42,6 +42,20 @@ class MainViewModel(
         }
     }
 
+    fun updateCurrentMemo(memo: MemoUI) {
+        _uiState.update { currentState ->
+            currentState.copy(currentMemo = memo)
+        }
+    }
+
+
+    fun setMemoToUpdate(memo: MemoUI?) {
+        _uiState.update { currentState ->
+            currentState.copy(memoToUpdate = memo)
+        }
+    }
+
+
 
     //These functions only to be used from the database functions down below. That's why they are private
     private fun updateAllMemos(allMemos: List<MemoUI>) {
@@ -50,21 +64,13 @@ class MainViewModel(
         }
     }
 
-    private fun updateCurrentMemo(memo: MemoUI) {
-        _uiState.update { currentState ->
-            currentState.copy(currentMemo = memo)
-        }
-    }
-
-
-
 
 
     //DATABASE FUNCTIONS
 
-    fun saveNewMemo(memo: String, millis: Long) {
+    fun saveNewMemo(memoId: Int?, memo: String, millis: Long) {
         viewModelScope.launch(Dispatchers.IO) {
-            dataRepository.saveNewMemo(memo, millis)
+            dataRepository.saveNewMemo(memoId, memo, millis)
         }
     }
 

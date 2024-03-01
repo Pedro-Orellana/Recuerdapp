@@ -2,15 +2,15 @@ package com.pedroapps.recuerdapp.data.database
 
 import androidx.room.Dao
 import androidx.room.Delete
-import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 
 @Dao
 interface MemoDao {
 
-    @Insert(entity = MemoRoomEntity::class, onConflict = OnConflictStrategy.REPLACE)
+    @Upsert(entity = MemoRoomEntity::class)
     suspend fun insertNewMemo(memo: MemoRoomEntity)
 
     @Update(entity = MemoRoomEntity::class, onConflict = OnConflictStrategy.REPLACE)

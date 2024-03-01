@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -36,7 +36,8 @@ fun HomeScreen(
     navController: NavHostController,
     languageCode: String,
     savedMemos: List<MemoUI>,
-    getAllSavedMemos: () -> Unit
+    getAllSavedMemos: () -> Unit,
+    setDetailsMemo: (MemoUI) -> Unit
 ) {
 
     LaunchedEffect(key1 = true) {
@@ -48,16 +49,13 @@ fun HomeScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues = paddingValues)
+            .verticalScroll(rememberScrollState())
     ) {
         Column(
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Top,
             modifier = Modifier
                 .fillMaxSize()
-                .scrollable(
-                    orientation = Orientation.Vertical,
-                    state = rememberScrollState()
-                )
         ) {
             Text(
                 text = "Home",
@@ -68,7 +66,13 @@ fun HomeScreen(
             )
 
             savedMemos.forEach {
-                MemoCard(memo = it, languageCode = languageCode)
+                MemoCard(
+                    memo = it,
+                    languageCode = languageCode,
+                    showDetails = {
+                        navigateToDetails(it, navController, setDetailsMemo)
+                    }
+                )
             }
 
         }
@@ -89,6 +93,16 @@ fun HomeScreen(
 }
 
 
+fun navigateToDetails(
+    memoUI: MemoUI,
+    navController: NavHostController,
+    setDetailsMemo: (MemoUI) -> Unit
+) {
+    setDetailsMemo(memoUI)
+    navController.navigate(Destinations.MemoDetailsScreen)
+}
+
+
 @Preview(showSystemUi = true)
 @Composable
 fun HomeScreenPreview() {
@@ -101,6 +115,7 @@ fun HomeScreenPreview() {
         navController = navController,
         languageCode = ENGLISH_LANGUAGE_CODE,
         savedMemos = listOf(MemoUI.getEmptyMemo()),
-        getAllSavedMemos = {}
+        getAllSavedMemos = { },
+        setDetailsMemo = { }
     )
 }

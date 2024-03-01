@@ -207,7 +207,8 @@ fun Container(
                         navController = navController,
                         languageCode = appState.value.currentLanguage,
                         savedMemos = appState.value.allMemos,
-                        getAllSavedMemos = viewModel::getAllMemos
+                        getAllSavedMemos = viewModel::getAllMemos,
+                        setDetailsMemo = viewModel::updateCurrentMemo
                     )
                 }
 
@@ -224,30 +225,36 @@ fun Container(
                         currentLanguageCode = appState.value.currentLanguage,
                         paddingValues = paddingValues,
                         navController = navController,
-
-                        saveAndScheduleMemo = { memo, millis ->
+                        saveAndScheduleMemo = {id, memo, millis ->
 
                             //TODO(save the memo in the database)
                             viewModel.saveNewMemo(
+                                memoId = id,
                                 memo = memo,
                                 millis = millis
                             )
 
+                            viewModel.setMemoToUpdate(null)
+
                             scheduleMemo(
+                                memoId = id,
                                 memo = memo,
                                 millis = millis,
                                 context = context
                             )
 
                             navController.popBackStack()
-                        }
+                        },
+                        memoToUpdate = appState.value.memoToUpdate
                     )
                 }
 
                 composable(route = Destinations.MemoDetailsScreen) {
                     MemoDetailsScreen(
                         paddingValues = paddingValues,
-                        memoUI = MemoUI.getEmptyMemo()
+                        memoUI = appState.value.currentMemo,
+                        navController = navController,
+                        setMemoToUpdate = viewModel::setMemoToUpdate
                         )
                 }
 
@@ -348,6 +355,7 @@ fun showTestNotificationInTenSeconds(context: Context) {
 
 
 fun scheduleMemo(
+    memoId: Int?,
     memo: String,
     millis: Long,
     context: Context
