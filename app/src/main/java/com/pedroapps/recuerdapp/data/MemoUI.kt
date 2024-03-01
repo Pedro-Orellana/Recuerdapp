@@ -1,6 +1,5 @@
 package com.pedroapps.recuerdapp.data
 
-import androidx.compose.foundation.layout.Spacer
 import com.pedroapps.recuerdapp.utils.ENGLISH_LANGUAGE_CODE
 import com.pedroapps.recuerdapp.utils.SPANISH_LANGUAGE_CODE
 import com.pedroapps.recuerdapp.utils.getEnglishScheduledTime
@@ -10,8 +9,8 @@ import java.time.ZoneId
 
 data class MemoUI(
     val id: Int = 0,
-    val memo: String,
-    val millis: Long
+    var memo: String,
+    var millis: Long
 ) {
 
 

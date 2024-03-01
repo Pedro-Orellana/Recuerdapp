@@ -48,6 +48,7 @@ import androidx.navigation.compose.rememberNavController
 import com.pedroapps.recuerdapp.components.BottomNavigationBar
 import com.pedroapps.recuerdapp.components.DrawerContent
 import com.pedroapps.recuerdapp.components.TopNavigationBar
+import com.pedroapps.recuerdapp.data.MemoUI
 import com.pedroapps.recuerdapp.data.database.RecuerdappDatabase
 import com.pedroapps.recuerdapp.notifications.RecuerdappNotificationReceiver
 import com.pedroapps.recuerdapp.screens.CreateMemoScreen
@@ -244,7 +245,10 @@ fun Container(
                 }
 
                 composable(route = Destinations.MemoDetailsScreen) {
-                    MemoDetailsScreen(paddingValues = paddingValues)
+                    MemoDetailsScreen(
+                        paddingValues = paddingValues,
+                        memoUI = MemoUI.getEmptyMemo()
+                        )
                 }
 
                 //TODO delete this when no longer needed
