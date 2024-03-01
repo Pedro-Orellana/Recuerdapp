@@ -199,6 +199,18 @@ fun ZonedDateTime.getSpanishScheduledTime() : String {
 }
 
 
+fun Long.getDateMillisFromDateTimeMillis() : Long {
+    //TODO(finish these methods)
+    return 0L
+}
+
+fun Long.getLocalTimeFromDateTimeMillis(): LocalTime {
+    //TODO(finish these methods)
+    return LocalTime.now()
+}
+
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 fun TimePickerState.formatTime() : String {

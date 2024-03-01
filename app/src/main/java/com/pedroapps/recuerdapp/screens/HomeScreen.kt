@@ -71,11 +71,6 @@ fun HomeScreen(
                 MemoCard(memo = it, languageCode = languageCode)
             }
 
-            Button(
-                onClick = { navController.navigate(Destinations.MemoDetailsScreen) }
-            ) {
-                Text(text = "Go to details")
-            }
         }
 
         FloatingActionButton(
