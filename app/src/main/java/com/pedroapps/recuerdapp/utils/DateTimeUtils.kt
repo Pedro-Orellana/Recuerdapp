@@ -6,14 +6,16 @@ import androidx.compose.material3.TimePickerState
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Month
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
-fun DatePickerState.formatToStringDate(languageCode: String, initialValue: String) : String {
+fun DatePickerState.formatToStringDate(languageCode: String, initialValue: String): String {
 
     var currentDate: Date? = null
     this.selectedDateMillis?.let {
@@ -26,7 +28,7 @@ fun DatePickerState.formatToStringDate(languageCode: String, initialValue: Strin
         val dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME
         val localDate = LocalDate.parse(stringDate, dateTimeFormatter)
 
-        return when(languageCode) {
+        return when (languageCode) {
             ENGLISH_LANGUAGE_CODE -> getEnglishStringDate(localDate)
             SPANISH_LANGUAGE_CODE -> getSpanishStringDate(localDate)
             else -> "Something in another language"
@@ -39,7 +41,7 @@ fun DatePickerState.formatToStringDate(languageCode: String, initialValue: Strin
 
 
 @OptIn(ExperimentalMaterial3Api::class)
-fun DatePickerState.getLocalDate() : LocalDate? {
+fun DatePickerState.getLocalDate(): LocalDate? {
 
     var currentDate: Date? = null
     this.selectedDateMillis?.let {
@@ -59,7 +61,7 @@ fun DatePickerState.getLocalDate() : LocalDate? {
 fun getEnglishStringDate(currentDate: LocalDate): String {
     val numberDay = currentDate.dayOfMonth
 
-    val day = when(currentDate.dayOfWeek) {
+    val day = when (currentDate.dayOfWeek) {
         DayOfWeek.MONDAY -> "Monday"
         DayOfWeek.TUESDAY -> "Tuesday"
         DayOfWeek.WEDNESDAY -> "Wednesday"
@@ -70,7 +72,7 @@ fun getEnglishStringDate(currentDate: LocalDate): String {
         else -> ""
     }
 
-    val month = when(currentDate.month) {
+    val month = when (currentDate.month) {
         Month.JANUARY -> "January"
         Month.FEBRUARY -> "February"
         Month.MARCH -> "March"
@@ -93,10 +95,10 @@ fun getEnglishStringDate(currentDate: LocalDate): String {
 }
 
 
-fun getSpanishStringDate(currentDate: LocalDate) : String {
+fun getSpanishStringDate(currentDate: LocalDate): String {
     val day = currentDate.dayOfMonth
 
-    val dayOfWeek = when(currentDate.dayOfWeek) {
+    val dayOfWeek = when (currentDate.dayOfWeek) {
         DayOfWeek.MONDAY -> "Lunes"
         DayOfWeek.TUESDAY -> "Martes"
         DayOfWeek.WEDNESDAY -> "Miércoles"
@@ -107,7 +109,7 @@ fun getSpanishStringDate(currentDate: LocalDate) : String {
         else -> "Sin día"
     }
 
-    val month = when(currentDate.month) {
+    val month = when (currentDate.month) {
         Month.JANUARY -> "Enero"
         Month.FEBRUARY -> "Febrero"
         Month.MARCH -> "Marzo"
@@ -116,7 +118,7 @@ fun getSpanishStringDate(currentDate: LocalDate) : String {
         Month.JUNE -> "Junio"
         Month.JULY -> "Julio"
         Month.AUGUST -> "Agosto"
-        Month.SEPTEMBER ->"Septiembre"
+        Month.SEPTEMBER -> "Septiembre"
         Month.OCTOBER -> "Octubre"
         Month.NOVEMBER -> "Noviembre"
         Month.DECEMBER -> "Diciembre"
@@ -129,7 +131,7 @@ fun getSpanishStringDate(currentDate: LocalDate) : String {
 }
 
 
-fun ZonedDateTime.getEnglishScheduledTime() : String {
+fun ZonedDateTime.getEnglishScheduledTime(): String {
 
     //TODO(format this method better to fill in minutes with zeroes when needed
     // and add AM or PM accordingly)
@@ -164,7 +166,7 @@ fun ZonedDateTime.getEnglishScheduledTime() : String {
     return "$month, $dayOfWeek $dayOfMonth at $hour:$minute"
 }
 
-fun ZonedDateTime.getSpanishScheduledTime() : String {
+fun ZonedDateTime.getSpanishScheduledTime(): String {
 
     //TODO(format this method better to fill in minutes with zeroes when needed
     // and add AM or PM accordingly)
@@ -199,21 +201,17 @@ fun ZonedDateTime.getSpanishScheduledTime() : String {
 }
 
 
-fun Long.getDateMillisFromDateTimeMillis() : Long {
-    //TODO(finish these methods)
-    return 0L
-}
 
 fun Long.getLocalTimeFromDateTimeMillis(): LocalTime {
-    //TODO(finish these methods)
-    return LocalTime.now()
+    val instant = Instant.ofEpochMilli(this)
+    val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+
+    return localDateTime.toLocalTime()
 }
-
-
 
 
 @OptIn(ExperimentalMaterial3Api::class)
-fun TimePickerState.formatTime() : String {
+fun TimePickerState.formatTime(): String {
     return "$hour: $minute"
 }
 

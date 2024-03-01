@@ -1,5 +1,6 @@
 package com.pedroapps.recuerdapp.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -59,7 +60,10 @@ fun MyTimePickerDialog(
 
 
 @Composable
-fun MemoCard(memo: MemoUI, languageCode: String) {
+fun MemoCard(
+    memo: MemoUI,
+    languageCode: String,
+    showDetails: () -> Unit) {
     //TODO call function here to get scheduled time and date
     val scheduledDate = MemoUI.getFormattedDateFromMillis(memo.millis, languageCode )
     Card(
@@ -69,7 +73,8 @@ fun MemoCard(memo: MemoUI, languageCode: String) {
         modifier = Modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Max)
-            .padding(start = 12.dp, end = 12.dp, top = 12.dp),
+            .padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 12.dp)
+            .clickable { showDetails() }
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -111,5 +116,5 @@ fun MemoCardPreview() {
         millis = System.currentTimeMillis()
     )
 
-    MemoCard(memo = memo, ENGLISH_LANGUAGE_CODE)
+    MemoCard(memo = memo, ENGLISH_LANGUAGE_CODE){}
 }

@@ -7,8 +7,11 @@ class MemoDataRepository(
     private val database: RecuerdappDatabase
 ) {
 
-    suspend fun saveNewMemo(memo: String, millis: Long) {
-        val entity = MemoRoomEntity(memo = memo, millis = millis)
+    suspend fun saveNewMemo(memoId: Int?, memo: String, millis: Long) {
+        val entity: MemoRoomEntity = when {
+            (memoId != null) -> MemoRoomEntity(id = memoId, memo = memo, millis = millis)
+            else -> MemoRoomEntity(memo = memo, millis = millis)
+        }
         database.memoDao().insertNewMemo(entity)
     }
 
@@ -42,7 +45,7 @@ class MemoDataRepository(
     }
 
 
-    private fun memoUiToEntity(memo: MemoUI) : MemoRoomEntity {
+    private fun memoUiToEntity(memo: MemoUI): MemoRoomEntity {
         return MemoRoomEntity(
             id = memo.id,
             memo = memo.memo,

@@ -45,10 +45,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.pedroapps.recuerdapp.R
 import com.pedroapps.recuerdapp.components.MyTimePickerDialog
+import com.pedroapps.recuerdapp.data.MemoUI
 import com.pedroapps.recuerdapp.utils.formatTime
 import com.pedroapps.recuerdapp.utils.formatToStringDate
 import com.pedroapps.recuerdapp.utils.getLocalDate
 import com.pedroapps.recuerdapp.utils.getLocalTime
+import com.pedroapps.recuerdapp.utils.getLocalTimeFromDateTimeMillis
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
@@ -60,7 +62,8 @@ fun CreateMemoScreen(
     currentLanguageCode: String,
     paddingValues: PaddingValues,
     navController: NavHostController,
-    saveAndScheduleMemo: (String, Long) -> Unit
+    saveAndScheduleMemo: (Int?, String, Long) -> Unit,
+    memoToUpdate: MemoUI?
 ) {
 
     val context = LocalContext.current
@@ -70,8 +73,10 @@ fun CreateMemoScreen(
 //    val initialTimeValue = "No selected time"
 //    val initialDateValue = "No date selected"
 
+    val selectedTime: LocalTime?  = memoToUpdate?.millis?.getLocalTimeFromDateTimeMillis()
+
     val memo = remember {
-        mutableStateOf("")
+        mutableStateOf(memoToUpdate?.memo ?: "")
     }
 
     val openDateDialog = remember {
@@ -89,20 +94,32 @@ fun CreateMemoScreen(
                 val startOfDayToday = localDateTime.toInstant(ZoneOffset.UTC).toEpochMilli()
                 return utcTimeMillis >= startOfDayToday
             }
-        }
+        },
+
+        initialSelectedDateMillis = memoToUpdate?.millis
     )
 
-    val timePickerState = rememberTimePickerState(is24Hour = false)
+    val timePickerState = rememberTimePickerState(
+        is24Hour = false,
+        initialHour = selectedTime?.hour ?: 0,
+        initialMinute = selectedTime?.minute ?: 0
+        )
 
 
     val formattedDate = remember {
         derivedStateOf {
-            datePickerState.formatToStringDate(currentLanguageCode, initialValue = initialDateValue)
+            datePickerState.formatToStringDate(currentLanguageCode,
+                initialValue = initialDateValue)
         }
     }
 
     val formattedTime = remember {
-        mutableStateOf(initialTimeValue)
+        if(timePickerState.hour != 0 && timePickerState.minute != 0) {
+            mutableStateOf(timePickerState.formatTime())
+        } else {
+            mutableStateOf(initialTimeValue)
+        }
+
     }
 
     Column(
@@ -186,6 +203,7 @@ fun CreateMemoScreen(
                 onClick = {
                     performSaveAndScheduleMemo(
                         memo = memo.value,
+                        memoId = memoToUpdate?.id,
                         timeState = timePickerState,
                         dateState = datePickerState,
                         saveAndScheduleMemo = saveAndScheduleMemo,
@@ -309,9 +327,10 @@ fun dismissTimePicker(
 @OptIn(ExperimentalMaterial3Api::class)
 fun performSaveAndScheduleMemo(
     memo: String,
+    memoId: Int? = null,
     timeState: TimePickerState,
     dateState: DatePickerState,
-    saveAndScheduleMemo: (String, Long) -> Unit,
+    saveAndScheduleMemo: (Int?, String, Long) -> Unit,
 ) {
 
     val localTime = timeState.getLocalTime()
@@ -319,7 +338,7 @@ fun performSaveAndScheduleMemo(
 
     val localDateTime = LocalDateTime.of(localDate, localTime)
     val millis = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-    saveAndScheduleMemo(memo, millis)
+    saveAndScheduleMemo(memoId, memo, millis)
 
 }
 
@@ -331,10 +350,15 @@ fun CreateMemoScreenPreview() {
     val paddingValues = PaddingValues()
     val navController = rememberNavController()
 
+    val testMemo = MemoUI.getEmptyMemo()
+    testMemo.memo = "Test memo to make sure this works correctly!"
+    testMemo.millis = System.currentTimeMillis()
+
     CreateMemoScreen(
         currentLanguageCode = currentLanguageCode,
         paddingValues = paddingValues,
         navController = navController,
-        saveAndScheduleMemo = { _, _ -> }
+        saveAndScheduleMemo = {_, _, _ -> },
+        memoToUpdate = testMemo
     )
 }
