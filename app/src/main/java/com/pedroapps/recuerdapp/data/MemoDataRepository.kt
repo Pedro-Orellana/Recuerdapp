@@ -19,8 +19,8 @@ class MemoDataRepository(
         return database.memoDao().getAllMemos().map { memoEntityToUi(it) }
     }
 
-    suspend fun getMemoById(memoId: Int): MemoUI {
-        return memoEntityToUi(database.memoDao().getMemoById(memoId = memoId))
+    suspend fun getMemoById(memoID: Int): MemoUI {
+        return memoEntityToUi(database.memoDao().getMemoById(memoID = memoID))
     }
 
     suspend fun updateMemo(memo: MemoUI) {

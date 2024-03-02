@@ -42,13 +42,14 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.pedroapps.recuerdapp.components.BottomNavigationBar
 import com.pedroapps.recuerdapp.components.DrawerContent
 import com.pedroapps.recuerdapp.components.TopNavigationBar
-import com.pedroapps.recuerdapp.data.MemoUI
 import com.pedroapps.recuerdapp.data.database.RecuerdappDatabase
 import com.pedroapps.recuerdapp.notifications.RecuerdappNotificationReceiver
 import com.pedroapps.recuerdapp.screens.CreateMemoScreen
@@ -208,7 +209,6 @@ fun Container(
                         languageCode = appState.value.currentLanguage,
                         savedMemos = appState.value.allMemos,
                         getAllSavedMemos = viewModel::getAllMemos,
-                        setDetailsMemo = viewModel::updateCurrentMemo
                     )
                 }
 
@@ -225,9 +225,9 @@ fun Container(
                         currentLanguageCode = appState.value.currentLanguage,
                         paddingValues = paddingValues,
                         navController = navController,
-                        saveAndScheduleMemo = {id, memo, millis ->
+                        saveAndScheduleMemo = { id, memo, millis ->
 
-                            //TODO(save the memo in the database)
+                            //TODO(refactor this ugly function into a single function)
                             viewModel.saveNewMemo(
                                 memoId = id,
                                 memo = memo,
@@ -249,13 +249,18 @@ fun Container(
                     )
                 }
 
-                composable(route = Destinations.MemoDetailsScreen) {
+                composable(
+                    route = "${Destinations.MemoDetailsScreen}/{memoID}",
+                    arguments = listOf(navArgument("memoID") { type = NavType.IntType })
+                ) {
                     MemoDetailsScreen(
                         paddingValues = paddingValues,
                         memoUI = appState.value.currentMemo,
+                        memoID = it.arguments?.getInt("memoID"),
                         navController = navController,
-                        setMemoToUpdate = viewModel::setMemoToUpdate
-                        )
+                        setMemoToUpdate = viewModel::setMemoToUpdate,
+                        getMemoByID = viewModel::getMemoByID
+                    )
                 }
 
                 //TODO delete this when no longer needed
@@ -335,7 +340,10 @@ fun showTestNotification(context: Context) {
 fun showTestNotificationInTenSeconds(context: Context) {
 
     val notificationIntent = Intent(context, RecuerdappNotificationReceiver::class.java)
-    notificationIntent.putExtra(MEMO_STRING_EXTRA, "10 seconds have passed since you decided to put this notification!")
+    notificationIntent.putExtra(
+        MEMO_STRING_EXTRA,
+        "10 seconds have passed since you decided to put this notification!"
+    )
     val notificationPendingIntent = PendingIntent.getBroadcast(
         context,
         100,

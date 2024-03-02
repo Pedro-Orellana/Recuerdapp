@@ -19,8 +19,8 @@ interface MemoDao {
     @Query("SELECT * FROM memo_table")
     suspend fun getAllMemos() : List<MemoRoomEntity>
 
-    @Query("SELECT * FROM memo_table WHERE memo_id LIKE :memoId")
-    suspend fun getMemoById(memoId: Int) : MemoRoomEntity
+    @Query("SELECT * FROM memo_table WHERE memo_id LIKE :memoID")
+    suspend fun getMemoById(memoID: Int) : MemoRoomEntity
 
     @Delete(entity = MemoRoomEntity::class)
     suspend fun deleteMemo(memo: MemoRoomEntity)
