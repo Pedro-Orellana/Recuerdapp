@@ -20,6 +20,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -37,13 +38,17 @@ import com.pedroapps.recuerdapp.data.MemoUI
 @Composable
 fun MemoDetailsScreen(
     paddingValues: PaddingValues,
+    memoID: Int?,
     memoUI: MemoUI,
     navController: NavHostController,
+    getMemoByID: (Int) -> Unit,
     setMemoToUpdate: (MemoUI) -> Unit
 ) {
 
-    //TODO(change this so that it fetches the information from database
-    // not from the state, because it turns out it's not updated when it is editted)
+    LaunchedEffect(key1 = true) {
+        println("memoID is $memoID")
+      memoID?.apply(getMemoByID)
+    }
 
 
     val showDeleteDialog = remember {
@@ -221,10 +226,11 @@ fun MemoDetailScreenPreview() {
 
     MemoDetailsScreen(
         paddingValues = paddingValues,
+        memoID = 0,
         memoUI = emptyMemo,
         navController = navController,
-        setMemoToUpdate = { }
-
+        getMemoByID = { },
+        setMemoToUpdate = { },
     )
 
 }

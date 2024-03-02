@@ -42,12 +42,6 @@ class MainViewModel(
         }
     }
 
-    fun updateCurrentMemo(memo: MemoUI) {
-        _uiState.update { currentState ->
-            currentState.copy(currentMemo = memo)
-        }
-    }
-
 
     fun setMemoToUpdate(memo: MemoUI?) {
         _uiState.update { currentState ->
@@ -61,6 +55,12 @@ class MainViewModel(
     private fun updateAllMemos(allMemos: List<MemoUI>) {
         _uiState.update { currentState ->
             currentState.copy(allMemos = allMemos)
+        }
+    }
+
+    private fun updateCurrentMemo(memo: MemoUI) {
+        _uiState.update { currentState ->
+            currentState.copy(currentMemo = memo)
         }
     }
 
@@ -83,9 +83,9 @@ class MainViewModel(
     }
 
 
-    fun getMemoById(memoId: Int) {
+    fun getMemoByID(memoID: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            val memo = dataRepository.getMemoById(memoId)
+            val memo = dataRepository.getMemoById(memoID)
             updateCurrentMemo(memo)
         }
     }

@@ -37,7 +37,6 @@ fun HomeScreen(
     languageCode: String,
     savedMemos: List<MemoUI>,
     getAllSavedMemos: () -> Unit,
-    setDetailsMemo: (MemoUI) -> Unit
 ) {
 
     LaunchedEffect(key1 = true) {
@@ -70,7 +69,7 @@ fun HomeScreen(
                     memo = it,
                     languageCode = languageCode,
                     showDetails = {
-                        navigateToDetails(it, navController, setDetailsMemo)
+                        navigateToDetails(it, navController)
                     }
                 )
             }
@@ -96,10 +95,8 @@ fun HomeScreen(
 fun navigateToDetails(
     memoUI: MemoUI,
     navController: NavHostController,
-    setDetailsMemo: (MemoUI) -> Unit
 ) {
-    setDetailsMemo(memoUI)
-    navController.navigate(Destinations.MemoDetailsScreen)
+    navController.navigate("${Destinations.MemoDetailsScreen}/${memoUI.id}")
 }
 
 
@@ -116,6 +113,6 @@ fun HomeScreenPreview() {
         languageCode = ENGLISH_LANGUAGE_CODE,
         savedMemos = listOf(MemoUI.getEmptyMemo()),
         getAllSavedMemos = { },
-        setDetailsMemo = { }
+        //setDetailsMemo = { }
     )
 }
