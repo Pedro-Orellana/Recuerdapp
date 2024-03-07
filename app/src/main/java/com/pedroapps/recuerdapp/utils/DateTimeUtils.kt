@@ -133,8 +133,24 @@ fun getSpanishStringDate(currentDate: LocalDate): String {
 
 fun ZonedDateTime.getEnglishScheduledTime(): String {
 
-    //TODO(format this method better to fill in minutes with zeroes when needed
-    // and add AM or PM accordingly)
+    val formattedMinute = when {
+        (minute < 10) -> {
+            minute.toString().padStart(2, '0')
+        }
+
+        else -> minute.toString()
+    }
+
+    val formattedHour = when {
+        (hour <= 12) -> hour
+        else -> (hour - 12)
+    }
+
+    val timeOfDay = when {
+        (hour < 12) -> "AM"
+        else -> "PM"
+    }
+
 
     val dayOfWeek = when (dayOfWeek) {
         DayOfWeek.MONDAY -> "Monday"
@@ -163,13 +179,28 @@ fun ZonedDateTime.getEnglishScheduledTime(): String {
         null -> ""
     }
 
-    return "$month, $dayOfWeek $dayOfMonth at $hour:$minute"
+    return "$month, $dayOfWeek $dayOfMonth at $formattedHour:$formattedMinute $timeOfDay"
 }
 
 fun ZonedDateTime.getSpanishScheduledTime(): String {
 
-    //TODO(format this method better to fill in minutes with zeroes when needed
-    // and add AM or PM accordingly)
+    val formattedMinute = when {
+        (minute < 10) -> {
+            minute.toString().padStart(2, '0')
+        }
+
+        else -> minute.toString()
+    }
+
+    val formattedHour = when {
+        (hour <= 12) -> hour
+        else -> (hour - 12)
+    }
+
+    val timeOfDay = when {
+        (hour < 12) -> "AM"
+        else -> "PM"
+    }
 
     val dayOfWeek = when (dayOfWeek) {
         DayOfWeek.MONDAY -> "Lunes"
@@ -197,9 +228,9 @@ fun ZonedDateTime.getSpanishScheduledTime(): String {
         Month.DECEMBER -> "Diciembre"
         null -> ""
     }
-    return "$dayOfWeek $dayOfMonth de $month, a las $hour:$minute"
-}
 
+    return "$dayOfWeek $dayOfMonth de $month, a las $formattedHour:$formattedMinute $timeOfDay"
+}
 
 
 fun Long.getLocalTimeFromDateTimeMillis(): LocalTime {

@@ -253,13 +253,15 @@ fun Container(
                     route = "${Destinations.MemoDetailsScreen}/{memoID}",
                     arguments = listOf(navArgument("memoID") { type = NavType.IntType })
                 ) {
+
                     MemoDetailsScreen(
                         paddingValues = paddingValues,
                         memoUI = appState.value.currentMemo,
                         memoID = it.arguments?.getInt("memoID"),
                         navController = navController,
                         setMemoToUpdate = viewModel::setMemoToUpdate,
-                        getMemoByID = viewModel::getMemoByID
+                        getMemoByID = viewModel::getMemoByID,
+                        deleteMemo = viewModel::deleteMemo
                     )
                 }
 

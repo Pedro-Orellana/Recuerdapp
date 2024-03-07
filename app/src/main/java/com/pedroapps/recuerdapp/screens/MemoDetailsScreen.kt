@@ -42,12 +42,13 @@ fun MemoDetailsScreen(
     memoUI: MemoUI,
     navController: NavHostController,
     getMemoByID: (Int) -> Unit,
-    setMemoToUpdate: (MemoUI) -> Unit
+    setMemoToUpdate: (MemoUI) -> Unit,
+    deleteMemo: (MemoUI) -> Unit
 ) {
 
     LaunchedEffect(key1 = true) {
         println("memoID is $memoID")
-      memoID?.apply(getMemoByID)
+        memoID?.apply(getMemoByID)
     }
 
 
@@ -191,8 +192,11 @@ fun MemoDetailsScreen(
             },
 
             confirmButton = {
-
-                TextButton(onClick = { /*TODO*/ }) {
+                TextButton(onClick = {
+                    deleteMemo(memoUI)
+                    navController.popBackStack()
+                    showDeleteDialog.value = false
+                }) {
                     Text(
                         text = "Delete",
                         color = Color.Red
@@ -231,6 +235,7 @@ fun MemoDetailScreenPreview() {
         navController = navController,
         getMemoByID = { },
         setMemoToUpdate = { },
+        deleteMemo = { }
     )
 
 }
