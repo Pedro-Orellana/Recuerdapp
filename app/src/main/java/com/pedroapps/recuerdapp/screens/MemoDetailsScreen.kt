@@ -138,7 +138,6 @@ fun MemoDetailsScreen(
                 ) {
                     OutlinedButton(
                         onClick = {
-
                             setMemoToUpdate(memoUI)
                             navController.navigate(Destinations.CreateMemoScreen)
 

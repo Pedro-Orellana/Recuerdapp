@@ -46,6 +46,7 @@ import androidx.navigation.compose.rememberNavController
 import com.pedroapps.recuerdapp.R
 import com.pedroapps.recuerdapp.components.MyTimePickerDialog
 import com.pedroapps.recuerdapp.data.MemoUI
+import com.pedroapps.recuerdapp.scheduleUpdatedMemo
 import com.pedroapps.recuerdapp.utils.formatTime
 import com.pedroapps.recuerdapp.utils.formatToStringDate
 import com.pedroapps.recuerdapp.utils.getLocalDate
@@ -63,6 +64,7 @@ fun CreateMemoScreen(
     paddingValues: PaddingValues,
     navController: NavHostController,
     saveAndScheduleMemo: (Int?, String, Long) -> Unit,
+    scheduleUpdatedMemo: (MemoUI, String, Long) -> Unit,
     memoToUpdate: MemoUI?
 ) {
 
@@ -201,13 +203,24 @@ fun CreateMemoScreen(
             Button(
 
                 onClick = {
-                    performSaveAndScheduleMemo(
-                        memo = memo.value,
-                        memoId = memoToUpdate?.id,
-                        timeState = timePickerState,
-                        dateState = datePickerState,
-                        saveAndScheduleMemo = saveAndScheduleMemo,
-                    )
+                    if(memoToUpdate == null) {
+                        performSaveAndScheduleMemo(
+                            memo = memo.value,
+                            memoID = memoToUpdate?.id,
+                            timeState = timePickerState,
+                            dateState = datePickerState,
+                            saveAndScheduleMemo = saveAndScheduleMemo,
+                        )
+                    } else {
+                        performScheduleUpdatedMemo(
+                            memoToDelete = memoToUpdate,
+                            updatedMemoString = memo.value,
+                            timeState = timePickerState,
+                            dateState = datePickerState,
+                            scheduleUpdatedMemo = scheduleUpdatedMemo
+                        )
+                    }
+
                 },
                 modifier = Modifier
                     .padding(end = 20.dp)
@@ -327,7 +340,7 @@ fun dismissTimePicker(
 @OptIn(ExperimentalMaterial3Api::class)
 fun performSaveAndScheduleMemo(
     memo: String,
-    memoId: Int? = null,
+    memoID: Int? = null,
     timeState: TimePickerState,
     dateState: DatePickerState,
     saveAndScheduleMemo: (Int?, String, Long) -> Unit,
@@ -338,7 +351,26 @@ fun performSaveAndScheduleMemo(
 
     val localDateTime = LocalDateTime.of(localDate, localTime)
     val millis = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-    saveAndScheduleMemo(memoId, memo, millis)
+    saveAndScheduleMemo(memoID, memo, millis)
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+fun performScheduleUpdatedMemo(
+    memoToDelete: MemoUI,
+    updatedMemoString: String,
+    timeState: TimePickerState,
+    dateState: DatePickerState,
+    scheduleUpdatedMemo: (MemoUI, String, Long) -> Unit
+) {
+
+    val localTime = timeState.getLocalTime()
+    val localDate = dateState.getLocalDate() ?: return
+
+    val localDateTime = LocalDateTime.of(localDate, localTime)
+    val millis = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    scheduleUpdatedMemo(memoToDelete, updatedMemoString, millis)
+
 
 }
 
@@ -359,6 +391,7 @@ fun CreateMemoScreenPreview() {
         paddingValues = paddingValues,
         navController = navController,
         saveAndScheduleMemo = {_, _, _ -> },
+        scheduleUpdatedMemo = { _, _, _ -> },
         memoToUpdate = testMemo
     )
 }

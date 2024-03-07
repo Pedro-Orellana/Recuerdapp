@@ -50,6 +50,7 @@ import androidx.navigation.navArgument
 import com.pedroapps.recuerdapp.components.BottomNavigationBar
 import com.pedroapps.recuerdapp.components.DrawerContent
 import com.pedroapps.recuerdapp.components.TopNavigationBar
+import com.pedroapps.recuerdapp.data.MemoUI
 import com.pedroapps.recuerdapp.data.database.RecuerdappDatabase
 import com.pedroapps.recuerdapp.notifications.RecuerdappNotificationReceiver
 import com.pedroapps.recuerdapp.screens.CreateMemoScreen
@@ -59,7 +60,7 @@ import com.pedroapps.recuerdapp.screens.MemoDetailsScreen
 import com.pedroapps.recuerdapp.screens.SettingsScreen
 import com.pedroapps.recuerdapp.screens.TestScreen
 import com.pedroapps.recuerdapp.ui.theme.RecuerdappTheme
-import com.pedroapps.recuerdapp.utils.MEMO_PENDING_INTENT_CODE
+import com.pedroapps.recuerdapp.utils.MEMO_ID_EXTRA
 import com.pedroapps.recuerdapp.utils.MEMO_STRING_EXTRA
 import com.pedroapps.recuerdapp.utils.NOTIFICATION_CHANNEL_ID
 import com.pedroapps.recuerdapp.utils.NOTIFICATION_CHANNEL_NAME
@@ -245,6 +246,15 @@ fun Container(
 
                             navController.popBackStack()
                         },
+
+                        scheduleUpdatedMemo = { memoToCancel, newMemoString, newMemoMillis ->
+                            scheduleUpdatedMemo(
+                                memoToCancel = memoToCancel,
+                                newMemoString = newMemoString,
+                                newMemoMillis = newMemoMillis,
+                                context = context
+                            )
+                        },
                         memoToUpdate = appState.value.memoToUpdate
                     )
                 }
@@ -371,24 +381,73 @@ fun scheduleMemo(
     context: Context
 ) {
 
-    //TODO(test this method more. It seems like if you do the same intent code every time, only the time changes
-    // but not the content, so maybe pass a new intent code with every call to this method)
-
     val memoIntent = Intent(context, RecuerdappNotificationReceiver::class.java)
     memoIntent.putExtra(MEMO_STRING_EXTRA, memo)
+    memoIntent.putExtra(MEMO_ID_EXTRA, memoId)
+
+    val pendingIntentCode = when (memoId) {
+        null -> 2024
+        else -> memoId + 2024
+    }
 
     val pendingMemoIntent = PendingIntent.getBroadcast(
         context,
-        MEMO_PENDING_INTENT_CODE,
+        pendingIntentCode,
         memoIntent,
+        PendingIntent.FLAG_MUTABLE
+    )
+
+
+    val alarmManager = context.getSystemService(AlarmManager::class.java)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (alarmManager.canScheduleExactAlarms()) {
+
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, millis, pendingMemoIntent)
+        }
+
+    }
+
+}
+
+
+fun scheduleUpdatedMemo(
+    memoToCancel: MemoUI,
+    newMemoString: String,
+    newMemoMillis: Long,
+    context: Context
+) {
+
+    val pendingIntentCode = (memoToCancel.id + 2024)
+
+    val intentToCancel = Intent(context, RecuerdappNotificationReceiver::class.java)
+    intentToCancel.putExtra(MEMO_STRING_EXTRA, memoToCancel.memo)
+    intentToCancel.putExtra(MEMO_ID_EXTRA, memoToCancel.id)
+
+    val updatedMemoIntent = Intent(context, RecuerdappNotificationReceiver::class.java)
+    updatedMemoIntent.putExtra(MEMO_STRING_EXTRA, newMemoString)
+    updatedMemoIntent.putExtra(MEMO_ID_EXTRA, memoToCancel.id)
+
+    val pendingIntentToCancel = PendingIntent.getService(
+        context,
+        pendingIntentCode,
+        intentToCancel,
+        PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+    )
+
+    //TODO(do print statements here to see why the pendingIntentToCancel is null)
+
+    val pendingMemoIntent = PendingIntent.getBroadcast(
+        context,
+        pendingIntentCode,
+        updatedMemoIntent,
         PendingIntent.FLAG_MUTABLE
     )
 
     val alarmManager = context.getSystemService(AlarmManager::class.java)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-
         if (alarmManager.canScheduleExactAlarms()) {
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, millis, pendingMemoIntent)
+            alarmManager.cancel(pendingIntentToCancel)
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, newMemoMillis, pendingMemoIntent)
         }
 
     }

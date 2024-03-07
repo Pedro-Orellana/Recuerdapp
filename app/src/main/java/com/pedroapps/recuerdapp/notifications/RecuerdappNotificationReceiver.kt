@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.pedroapps.recuerdapp.R
+import com.pedroapps.recuerdapp.utils.MEMO_ID_EXTRA
 import com.pedroapps.recuerdapp.utils.MEMO_STRING_EXTRA
 import com.pedroapps.recuerdapp.utils.NOTIFICATION_CHANNEL_ID
 
@@ -18,13 +19,14 @@ class RecuerdappNotificationReceiver: BroadcastReceiver() {
 
             val manager = context.getSystemService(NotificationManager::class.java)
             val content = intent.getStringExtra(MEMO_STRING_EXTRA) ?: "NO CONTENT"
+            val notificationID = intent.getIntExtra(MEMO_ID_EXTRA, 0)
 
             val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
-                .setContentTitle("Memo!")
+                .setContentTitle("Memo: ")
                 .setContentText(content)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
 
-            manager.notify(2, notification.build())
+            manager.notify(notificationID, notification.build())
 
         }
     }
