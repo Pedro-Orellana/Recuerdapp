@@ -8,6 +8,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
@@ -248,12 +249,23 @@ fun Container(
                         },
 
                         scheduleUpdatedMemo = { memoToCancel, newMemoString, newMemoMillis ->
+
+                            viewModel.updateMemo(
+                                memoID = memoToCancel.id,
+                                memoString = newMemoString,
+                                memoMillis = newMemoMillis
+                            )
+
+                            viewModel.setMemoToUpdate(null)
+
                             scheduleUpdatedMemo(
                                 memoToCancel = memoToCancel,
                                 newMemoString = newMemoString,
                                 newMemoMillis = newMemoMillis,
                                 context = context
                             )
+
+                            navController.popBackStack()
                         },
                         memoToUpdate = appState.value.memoToUpdate
                     )
@@ -373,6 +385,8 @@ fun showTestNotificationInTenSeconds(context: Context) {
 
 }
 
+//TODO(to completely fix this method, I have to create the MemoUI instance before calling scheduleMemo() and pass in the memoID to use as the pendingIntentCode)
+
 
 fun scheduleMemo(
     memoId: Int?,
@@ -382,13 +396,16 @@ fun scheduleMemo(
 ) {
 
     val memoIntent = Intent(context, RecuerdappNotificationReceiver::class.java)
+    memoIntent.setAction("My intent action")
+    memoIntent.addCategory("My intent category")
+    memoIntent.setDataAndType(Uri.EMPTY, "NO TYPE")
     memoIntent.putExtra(MEMO_STRING_EXTRA, memo)
     memoIntent.putExtra(MEMO_ID_EXTRA, memoId)
 
-    val pendingIntentCode = when (memoId) {
-        null -> 2024
-        else -> memoId + 2024
-    }
+    val pendingIntentCode = 500
+
+    println("When creating the memo:")
+    println("pendingIntentCode: $pendingIntentCode")
 
     val pendingMemoIntent = PendingIntent.getBroadcast(
         context,
@@ -417,9 +434,15 @@ fun scheduleUpdatedMemo(
     context: Context
 ) {
 
-    val pendingIntentCode = (memoToCancel.id + 2024)
+    val alarmManager = context.getSystemService(AlarmManager::class.java)
+
+//    val pendingIntentCode = (memoToCancel.id + 2024)
+    val pendingIntentCode = 500
 
     val intentToCancel = Intent(context, RecuerdappNotificationReceiver::class.java)
+    intentToCancel.setAction("My intent action")
+    intentToCancel.addCategory("My intent category")
+    intentToCancel.setDataAndType(Uri.EMPTY, "NO TYPE")
     intentToCancel.putExtra(MEMO_STRING_EXTRA, memoToCancel.memo)
     intentToCancel.putExtra(MEMO_ID_EXTRA, memoToCancel.id)
 
@@ -427,14 +450,16 @@ fun scheduleUpdatedMemo(
     updatedMemoIntent.putExtra(MEMO_STRING_EXTRA, newMemoString)
     updatedMemoIntent.putExtra(MEMO_ID_EXTRA, memoToCancel.id)
 
-    val pendingIntentToCancel = PendingIntent.getService(
+    val pendingIntentToCancel = PendingIntent.getBroadcast(
         context,
         pendingIntentCode,
         intentToCancel,
-        PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_MUTABLE
     )
 
-    //TODO(do print statements here to see why the pendingIntentToCancel is null)
+    alarmManager.cancel(pendingIntentToCancel)
+
+    //TODO(Seems like since we are using the same code to cancel and re-schedule, it is cancelling the alarm altogether)
 
     val pendingMemoIntent = PendingIntent.getBroadcast(
         context,
@@ -443,15 +468,13 @@ fun scheduleUpdatedMemo(
         PendingIntent.FLAG_MUTABLE
     )
 
-    val alarmManager = context.getSystemService(AlarmManager::class.java)
+
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         if (alarmManager.canScheduleExactAlarms()) {
-            alarmManager.cancel(pendingIntentToCancel)
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, newMemoMillis, pendingMemoIntent)
         }
 
     }
-
 
 }
 

@@ -91,9 +91,15 @@ class MainViewModel(
     }
 
 
-    fun updateMemo(memo: MemoUI) {
+//    fun updateMemo(memo: MemoUI) {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            dataRepository.updateMemo(memo)
+//        }
+//    }
+
+    fun updateMemo(memoID: Int, memoString: String, memoMillis: Long) {
         viewModelScope.launch(Dispatchers.IO) {
-            dataRepository.updateMemo(memo)
+            dataRepository.updateMemo(memoID, memoString, memoMillis)
         }
     }
 

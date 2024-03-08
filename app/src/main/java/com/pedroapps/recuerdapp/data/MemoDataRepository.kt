@@ -23,8 +23,14 @@ class MemoDataRepository(
         return memoEntityToUi(database.memoDao().getMemoById(memoID = memoID))
     }
 
-    suspend fun updateMemo(memo: MemoUI) {
-        val entity = memoUiToEntity(memo)
+//    suspend fun updateMemo(memo: MemoUI) {
+//        val entity = memoUiToEntity(memo)
+//        database.memoDao().updateMemo(entity)
+//    }
+
+    suspend fun updateMemo(memoID: Int, memoString: String, memoMillis: Long) {
+        val memoUI = MemoUI(id = memoID, memo = memoString, millis = memoMillis)
+        val entity = memoUiToEntity(memoUI)
         database.memoDao().updateMemo(entity)
     }
 
