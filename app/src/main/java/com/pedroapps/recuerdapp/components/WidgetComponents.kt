@@ -112,6 +112,7 @@ fun MemoCardPreview() {
 
     val memo = MemoUI(
         id = 1,
+        pendingIntentID = -2,
         memo = "Remember to do your best at work today!",
         millis = System.currentTimeMillis()
     )

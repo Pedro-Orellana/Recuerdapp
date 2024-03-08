@@ -67,6 +67,7 @@ import com.pedroapps.recuerdapp.utils.NOTIFICATION_CHANNEL_ID
 import com.pedroapps.recuerdapp.utils.NOTIFICATION_CHANNEL_NAME
 import com.pedroapps.recuerdapp.viewmodels.MainViewModel
 import kotlinx.coroutines.delay
+import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 
@@ -227,11 +228,13 @@ fun Container(
                         currentLanguageCode = appState.value.currentLanguage,
                         paddingValues = paddingValues,
                         navController = navController,
-                        saveAndScheduleMemo = { id, memo, millis ->
+                        saveAndScheduleMemo = { memo, millis ->
+
+                            val pendingIntentID = Random(System.currentTimeMillis()).nextInt()
 
                             //TODO(refactor this ugly function into a single function)
                             viewModel.saveNewMemo(
-                                memoId = id,
+                                pendingIntentID = pendingIntentID,
                                 memo = memo,
                                 millis = millis
                             )
@@ -239,7 +242,7 @@ fun Container(
                             viewModel.setMemoToUpdate(null)
 
                             scheduleMemo(
-                                memoId = id,
+                                pendingIntentID = pendingIntentID,
                                 memo = memo,
                                 millis = millis,
                                 context = context
@@ -250,8 +253,11 @@ fun Container(
 
                         scheduleUpdatedMemo = { memoToCancel, newMemoString, newMemoMillis ->
 
+
+
                             viewModel.updateMemo(
                                 memoID = memoToCancel.id,
+                                pendingIntentID = memoToCancel.pendingIntentID,
                                 memoString = newMemoString,
                                 memoMillis = newMemoMillis
                             )
@@ -385,11 +391,9 @@ fun showTestNotificationInTenSeconds(context: Context) {
 
 }
 
-//TODO(to completely fix this method, I have to create the MemoUI instance before calling scheduleMemo() and pass in the memoID to use as the pendingIntentCode)
-
 
 fun scheduleMemo(
-    memoId: Int?,
+    pendingIntentID: Int,
     memo: String,
     millis: Long,
     context: Context
@@ -400,16 +404,14 @@ fun scheduleMemo(
     memoIntent.addCategory("My intent category")
     memoIntent.setDataAndType(Uri.EMPTY, "NO TYPE")
     memoIntent.putExtra(MEMO_STRING_EXTRA, memo)
-    memoIntent.putExtra(MEMO_ID_EXTRA, memoId)
-
-    val pendingIntentCode = 500
+    memoIntent.putExtra(MEMO_ID_EXTRA, pendingIntentID)
 
     println("When creating the memo:")
-    println("pendingIntentCode: $pendingIntentCode")
+    println("pendingIntentCode: $pendingIntentID")
 
     val pendingMemoIntent = PendingIntent.getBroadcast(
         context,
-        pendingIntentCode,
+        pendingIntentID,
         memoIntent,
         PendingIntent.FLAG_MUTABLE
     )
@@ -436,19 +438,18 @@ fun scheduleUpdatedMemo(
 
     val alarmManager = context.getSystemService(AlarmManager::class.java)
 
-//    val pendingIntentCode = (memoToCancel.id + 2024)
-    val pendingIntentCode = 500
+    val pendingIntentCode = memoToCancel.pendingIntentID
 
     val intentToCancel = Intent(context, RecuerdappNotificationReceiver::class.java)
     intentToCancel.setAction("My intent action")
     intentToCancel.addCategory("My intent category")
     intentToCancel.setDataAndType(Uri.EMPTY, "NO TYPE")
     intentToCancel.putExtra(MEMO_STRING_EXTRA, memoToCancel.memo)
-    intentToCancel.putExtra(MEMO_ID_EXTRA, memoToCancel.id)
+    intentToCancel.putExtra(MEMO_ID_EXTRA, pendingIntentCode)
 
     val updatedMemoIntent = Intent(context, RecuerdappNotificationReceiver::class.java)
     updatedMemoIntent.putExtra(MEMO_STRING_EXTRA, newMemoString)
-    updatedMemoIntent.putExtra(MEMO_ID_EXTRA, memoToCancel.id)
+    updatedMemoIntent.putExtra(MEMO_ID_EXTRA, pendingIntentCode)
 
     val pendingIntentToCancel = PendingIntent.getBroadcast(
         context,
@@ -458,8 +459,6 @@ fun scheduleUpdatedMemo(
     )
 
     alarmManager.cancel(pendingIntentToCancel)
-
-    //TODO(Seems like since we are using the same code to cancel and re-schedule, it is cancelling the alarm altogether)
 
     val pendingMemoIntent = PendingIntent.getBroadcast(
         context,

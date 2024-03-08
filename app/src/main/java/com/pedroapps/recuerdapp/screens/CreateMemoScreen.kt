@@ -56,6 +56,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
+import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,7 +64,7 @@ fun CreateMemoScreen(
     currentLanguageCode: String,
     paddingValues: PaddingValues,
     navController: NavHostController,
-    saveAndScheduleMemo: (Int?, String, Long) -> Unit,
+    saveAndScheduleMemo: (String, Long) -> Unit,
     scheduleUpdatedMemo: (MemoUI, String, Long) -> Unit,
     memoToUpdate: MemoUI?
 ) {
@@ -206,7 +207,6 @@ fun CreateMemoScreen(
                     if(memoToUpdate == null) {
                         performSaveAndScheduleMemo(
                             memo = memo.value,
-                            memoID = memoToUpdate?.id,
                             timeState = timePickerState,
                             dateState = datePickerState,
                             saveAndScheduleMemo = saveAndScheduleMemo,
@@ -340,18 +340,18 @@ fun dismissTimePicker(
 @OptIn(ExperimentalMaterial3Api::class)
 fun performSaveAndScheduleMemo(
     memo: String,
-    memoID: Int? = null,
     timeState: TimePickerState,
     dateState: DatePickerState,
-    saveAndScheduleMemo: (Int?, String, Long) -> Unit,
+    saveAndScheduleMemo: (String, Long) -> Unit,
 ) {
+
 
     val localTime = timeState.getLocalTime()
     val localDate = dateState.getLocalDate() ?: return
 
     val localDateTime = LocalDateTime.of(localDate, localTime)
     val millis = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-    saveAndScheduleMemo(memoID, memo, millis)
+    saveAndScheduleMemo(memo, millis)
 
 }
 
@@ -390,7 +390,7 @@ fun CreateMemoScreenPreview() {
         currentLanguageCode = currentLanguageCode,
         paddingValues = paddingValues,
         navController = navController,
-        saveAndScheduleMemo = {_, _, _ -> },
+        saveAndScheduleMemo = {_, _ -> },
         scheduleUpdatedMemo = { _, _, _ -> },
         memoToUpdate = testMemo
     )

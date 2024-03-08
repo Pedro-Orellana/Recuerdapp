@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [MemoRoomEntity::class], version = 1, exportSchema = false)
+@Database(entities = [MemoRoomEntity::class], version = 2, exportSchema = false)
 abstract class RecuerdappDatabase: RoomDatabase() {
 
     abstract fun memoDao() : MemoDao
