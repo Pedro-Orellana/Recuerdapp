@@ -64,7 +64,7 @@ fun MemoCard(
     memo: MemoUI,
     languageCode: String,
     showDetails: () -> Unit) {
-    //TODO call function here to get scheduled time and date
+
     val scheduledDate = MemoUI.getFormattedDateFromMillis(memo.millis, languageCode )
     Card(
         elevation = CardDefaults.cardElevation(

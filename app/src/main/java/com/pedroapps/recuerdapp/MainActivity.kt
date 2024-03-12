@@ -7,25 +7,27 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,12 +39,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -80,32 +83,20 @@ class MainActivity : AppCompatActivity() {
         //create notification channel
         createRecuerdappNotificationChannel(this)
 
-        //immediately ask for permission to receive notifications
-        val notificationPermissionLauncher =
-            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-                //TODO(do something more useful here)
-                val message =
-                    if (isGranted) "Notifications are allowed" else "Please grant the permission to allow notifications"
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-            }
-
-        //immediately ask for permission to set alarms
-        val alarmSchedulePermissionLauncher =
-            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-                //TODO(do something more useful here)
-                val message =
-                    if (isGranted) "Alarm schedule permissions are granted" else "Please allow to schedule alarms"
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-            }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-            alarmSchedulePermissionLauncher.launch(Manifest.permission.SCHEDULE_EXACT_ALARM)
-
         val currentLanguage = AppCompatDelegate.getApplicationLocales().toLanguageTags()
 
         setContent {
+
+            val (showNotificationDialog, setShowNotificationDialog) = remember {
+                mutableStateOf(false)
+            }
+
+
+            val notificationPermissionLauncher =
+                rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted ->
+                    setShowNotificationDialog(!isGranted)
+                }
+
 
             val factory =
                 MainViewModel.Companion.MainViewModelFactory(
@@ -118,8 +109,6 @@ class MainActivity : AppCompatActivity() {
                 mutableStateOf(true)
             }
 
-            //TODO(consider creating the state as a variable here, and then just passing it down as a parameter
-            // in the Container() composable)
             LaunchedEffect(key1 = true) {
                 if (viewModel.uiState.value.currentLanguage != currentLanguage) {
                     viewModel.updateCurrentLanguage(currentLanguage)
@@ -127,8 +116,13 @@ class MainActivity : AppCompatActivity() {
             }
 
             LaunchedEffect(key1 = true) {
-                delay(2000)
+                delay(1000)
                 appStarting = false
+            }
+
+            LaunchedEffect(key1 = notificationPermissionLauncher) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
 
             RecuerdappTheme {
@@ -147,6 +141,8 @@ class MainActivity : AppCompatActivity() {
                         } else {
                             Container(
                                 viewModel = viewModel,
+                                showNotificationDialog = showNotificationDialog,
+                                setShowNotificationDialog = setShowNotificationDialog
                             )
                         }
 
@@ -165,6 +161,8 @@ class MainActivity : AppCompatActivity() {
 @Composable
 fun Container(
     viewModel: MainViewModel,
+    showNotificationDialog: Boolean,
+    setShowNotificationDialog: (Boolean) -> Unit
 ) {
     //dependencies
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -224,57 +222,41 @@ fun Container(
                 }
 
                 composable(route = Destinations.CreateMemoScreen) {
+
                     CreateMemoScreen(
                         currentLanguageCode = appState.value.currentLanguage,
                         paddingValues = paddingValues,
                         navController = navController,
+                        memoToUpdate = appState.value.memoToUpdate,
                         saveAndScheduleMemo = { memo, millis ->
 
-                            val pendingIntentID = Random(System.currentTimeMillis()).nextInt()
-
-                            //TODO(refactor this ugly function into a single function)
-                            viewModel.saveNewMemo(
-                                pendingIntentID = pendingIntentID,
-                                memo = memo,
-                                millis = millis
-                            )
-
-                            viewModel.setMemoToUpdate(null)
-
-                            scheduleMemo(
-                                pendingIntentID = pendingIntentID,
+                            createNewMemoAction(
                                 memo = memo,
                                 millis = millis,
-                                context = context
+                                context = context,
+                                navController = navController,
+                                saveNewMemo = viewModel::saveNewMemo,
+                                setMemoToUpdate = viewModel::setMemoToUpdate
                             )
 
-                            navController.popBackStack()
                         },
 
                         scheduleUpdatedMemo = { memoToCancel, newMemoString, newMemoMillis ->
 
 
-
-                            viewModel.updateMemo(
-                                memoID = memoToCancel.id,
-                                pendingIntentID = memoToCancel.pendingIntentID,
-                                memoString = newMemoString,
-                                memoMillis = newMemoMillis
-                            )
-
-                            viewModel.setMemoToUpdate(null)
-
-                            scheduleUpdatedMemo(
+                            scheduleUpdatedMemoAction(
                                 memoToCancel = memoToCancel,
                                 newMemoString = newMemoString,
                                 newMemoMillis = newMemoMillis,
-                                context = context
+                                context = context,
+                                navController = navController,
+                                updateMemo = viewModel::updateMemo,
+                                setMemoToUpdate = viewModel::setMemoToUpdate
                             )
 
-                            navController.popBackStack()
                         },
-                        memoToUpdate = appState.value.memoToUpdate
-                    )
+
+                        )
                 }
 
                 composable(
@@ -297,9 +279,7 @@ fun Container(
                 composable(route = Destinations.TestScreen) {
                     TestScreen(
                         paddingValues = paddingValues,
-                        showTestNotification = {
-                            showTestNotification(context)
-                        },
+                        showTestNotification = {},
                         showNotificationTenSeconds = {
                             showTestNotificationInTenSeconds(context)
                         }
@@ -308,24 +288,61 @@ fun Container(
             }
         }
     }
+
+    if (showNotificationDialog) {
+        NotificationPermissionDialog(
+            onDismiss = { setShowNotificationDialog(false) }
+        )
+    }
+
 }
 
 
 @Composable
 fun RecuerdappLogo() {
-    //TODO(finish this logo)
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
     ) {
+        Image(
+            painter = painterResource(
+                id = R.drawable.recuerdapp_logo
+            ),
+            contentDescription = "Recuerdapp logo"
+        )
+
         Text(
-            text = "RECUERDAPP LOGO",
+            text = "Recuerdapp",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = FontFamily.Monospace,
             textAlign = TextAlign.Center,
-            fontSize = 28.sp
         )
     }
+}
+
+
+@Composable
+fun NotificationPermissionDialog(
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        confirmButton = {
+            TextButton(onClick = { onDismiss() }) {
+                Text(text = "OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { onDismiss() }) {
+                Text(text = "Cancel")
+            }
+        },
+        title = { Text(text = "Notification permission is not granted") },
+        text = { Text(text = "To better use this app, please go to the app's settings and grant permission for notifications") }
+    )
 }
 
 
@@ -337,33 +354,6 @@ fun createRecuerdappNotificationChannel(context: Context) {
     )
     val manager = context.getSystemService(NotificationManager::class.java)
     manager.createNotificationChannel(channel)
-}
-
-
-fun showTestNotification(context: Context) {
-
-    with(NotificationManagerCompat.from(context)) {
-        val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("Remember to...")
-            .setContentText("Remember to drink 8 glasses of water a day!")
-
-        if (ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return
-        }
-        notify(1, builder.build())
-    }
 }
 
 
@@ -478,4 +468,64 @@ fun scheduleUpdatedMemo(
 }
 
 
+private fun createNewMemoAction(
+    memo: String,
+    millis: Long,
+    context: Context,
+    navController: NavHostController,
+    saveNewMemo: (Int, String, Long) -> Unit,
+    setMemoToUpdate: (MemoUI?) -> Unit,
+) {
+
+    val pendingIntentID = Random(System.currentTimeMillis()).nextInt()
+
+    saveNewMemo(
+        pendingIntentID,
+        memo,
+        millis
+    )
+
+    setMemoToUpdate(null)
+
+    scheduleMemo(
+        pendingIntentID = pendingIntentID,
+        memo = memo,
+        millis = millis,
+        context = context
+    )
+
+    navController.popBackStack()
+}
+
+
+private fun scheduleUpdatedMemoAction(
+    memoToCancel: MemoUI,
+    newMemoString: String,
+    newMemoMillis: Long,
+    context: Context,
+    navController: NavHostController,
+    updateMemo: (Int, Int, String, Long) -> Unit,
+    setMemoToUpdate: (MemoUI?) -> Unit
+
+) {
+
+    updateMemo(
+        memoToCancel.id,
+        memoToCancel.pendingIntentID,
+        newMemoString,
+        newMemoMillis
+    )
+
+    setMemoToUpdate(null)
+
+    scheduleUpdatedMemo(
+        memoToCancel = memoToCancel,
+        newMemoString = newMemoString,
+        newMemoMillis = newMemoMillis,
+        context = context
+    )
+
+    navController.popBackStack()
+
+}
 
