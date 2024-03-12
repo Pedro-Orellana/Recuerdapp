@@ -7,11 +7,8 @@ class MemoDataRepository(
     private val database: RecuerdappDatabase
 ) {
 
-    suspend fun saveNewMemo(memoId: Int?, memo: String, millis: Long) {
-        val entity: MemoRoomEntity = when {
-            (memoId != null) -> MemoRoomEntity(id = memoId, memo = memo, millis = millis)
-            else -> MemoRoomEntity(memo = memo, millis = millis)
-        }
+    suspend fun saveNewMemo(pendingIntentID: Int, memo: String, millis: Long) {
+        val entity = MemoRoomEntity(memo = memo, pendingIntentID = pendingIntentID, millis = millis)
         database.memoDao().insertNewMemo(entity)
     }
 
@@ -23,8 +20,13 @@ class MemoDataRepository(
         return memoEntityToUi(database.memoDao().getMemoById(memoID = memoID))
     }
 
-    suspend fun updateMemo(memo: MemoUI) {
-        val entity = memoUiToEntity(memo)
+//    suspend fun updateMemo(memo: MemoUI) {
+//        val entity = memoUiToEntity(memo)
+//        database.memoDao().updateMemo(entity)
+//    }
+
+    suspend fun updateMemo(memoID: Int, pendingIntentID: Int, memoString: String, memoMillis: Long) {
+        val entity = MemoRoomEntity(id = memoID, pendingIntentID = pendingIntentID, memo = memoString, millis = memoMillis)
         database.memoDao().updateMemo(entity)
     }
 
@@ -39,6 +41,7 @@ class MemoDataRepository(
     private fun memoEntityToUi(entity: MemoRoomEntity): MemoUI {
         return MemoUI(
             id = entity.id,
+            pendingIntentID = entity.pendingIntentID,
             memo = entity.memo,
             millis = entity.millis
         )
@@ -48,9 +51,9 @@ class MemoDataRepository(
     private fun memoUiToEntity(memo: MemoUI): MemoRoomEntity {
         return MemoRoomEntity(
             id = memo.id,
+            pendingIntentID = memo.pendingIntentID,
             memo = memo.memo,
             millis = memo.millis
-
         )
     }
 

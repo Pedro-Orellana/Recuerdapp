@@ -9,6 +9,7 @@ import java.time.ZoneId
 
 data class MemoUI(
     val id: Int = 0,
+    val pendingIntentID: Int,
     var memo: String,
     var millis: Long
 ) {
@@ -19,6 +20,7 @@ data class MemoUI(
         fun getEmptyMemo() : MemoUI {
             return MemoUI(
                 id = -1,
+                pendingIntentID = -2,
                 memo = "",
                 millis = -1
             )

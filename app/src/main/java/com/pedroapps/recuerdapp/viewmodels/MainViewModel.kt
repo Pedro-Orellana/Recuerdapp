@@ -68,9 +68,9 @@ class MainViewModel(
 
     //DATABASE FUNCTIONS
 
-    fun saveNewMemo(memoId: Int?, memo: String, millis: Long) {
+    fun saveNewMemo(pendingIntentID: Int, memo: String, millis: Long) {
         viewModelScope.launch(Dispatchers.IO) {
-            dataRepository.saveNewMemo(memoId, memo, millis)
+            dataRepository.saveNewMemo(pendingIntentID, memo, millis)
         }
     }
 
@@ -91,9 +91,15 @@ class MainViewModel(
     }
 
 
-    fun updateMemo(memo: MemoUI) {
+//    fun updateMemo(memo: MemoUI) {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            dataRepository.updateMemo(memo)
+//        }
+//    }
+
+    fun updateMemo(memoID: Int, pendingIntentID: Int, memoString: String, memoMillis: Long) {
         viewModelScope.launch(Dispatchers.IO) {
-            dataRepository.updateMemo(memo)
+            dataRepository.updateMemo(memoID, pendingIntentID = pendingIntentID, memoString, memoMillis)
         }
     }
 
